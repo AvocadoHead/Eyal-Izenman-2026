@@ -134,8 +134,8 @@ const App: React.FC = () => {
                     year="2025"
                     title="Showreel"
                     previewVideoUrl="https://assets.mixkit.co/videos/preview/mixkit-abstract-texture-of-black-and-white-lines-and-dots-33479-large.mp4"
-                    fullVideoEmbedUrl="https://drive.google.com/file/d/1JznGln7GePzQnsm-6jrBAffBBOfqxvka/preview"
-                    fullVideoDirectUrl="https://drive.google.com/file/d/1JznGln7GePzQnsm-6jrBAffBBOfqxvka/view?usp=sharing"
+                    fullVideoEmbedUrl="https://www.youtube.com/embed/mkjYn2cRhrI
+                    fullVideoDirectUrl="https://youtube.com/shorts/mkjYn2cRhrI
                  />
     },
     {
@@ -149,8 +149,8 @@ const App: React.FC = () => {
                     year="2024"
                     title="Dreams"
                     previewVideoUrl="https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-286-large.mp4"
-                    fullVideoEmbedUrl="https://drive.google.com/file/d/1XFAyCqS2zUXhREcbSTGCAXbgTxRoMmTM/preview"
-                    fullVideoDirectUrl="https://drive.google.com/file/d/1XFAyCqS2zUXhREcbSTGCAXbgTxRoMmTM/view?usp=drive_link"
+                    fullVideoEmbedUrl="hhttps://www.youtube.com/embed/A_z71zIAXpU
+                    fullVideoDirectUrl="https://youtube.com/shorts/A_z71zIAXpU
                  />
     },
     {
