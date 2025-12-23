@@ -135,7 +135,7 @@ const App: React.FC = () => {
                     title="Showreel"
                     previewVideoUrl="https://assets.mixkit.co/videos/preview/mixkit-abstract-texture-of-black-and-white-lines-and-dots-33479-large.mp4"
                     fullVideoEmbedUrl="https://www.youtube.com/embed/mkjYn2cRhrI
-                    fullVideoDirectUrl="https://youtube.com/shorts/mkjYn2cRhrI
+                    fullVideoDirectUrl="https://youtube.com/shorts/mkjYn2cRhrI"
                  />
     },
     {
