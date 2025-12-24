@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, X, Volume2, VolumeX, Monitor, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, X, Volume2, VolumeX, Monitor, ExternalLink, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 export interface VideoSource {
@@ -23,102 +23,146 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  
+  // New State: Controls whether the card video is muted or hearing audio
+  const [isInlineUnmuted, setIsInlineUnmuted] = useState(false);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
-
-    const [isCardPlaying, setIsCardPlaying] = useState(false);
   const currentSource = videoSources[activeIndex];
 
-  // Helper to extract YouTube ID and create embed URL
+  // Helper: Robust YouTube ID extraction
   const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return null;
     let videoId = '';
-    if (url.includes('shorts/')) {
-        videoId = url.split('shorts/')[1].split('?')[0];
-    } else if (url.includes('youtu.be/')) {
-        videoId = url.split('youtu.be/')[1].split('?')[0];
-    } else if (url.includes('v=')) {
-        videoId = url.split('v=')[1].split('&')[0];
-    }
     
-    if (videoId) {
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&controls=1&showinfo=0`;
+    try {
+        if (url.includes('shorts/')) {
+            videoId = url.split('shorts/')[1].split('?')[0];
+        } else if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1].split('?')[0];
+        } else if (url.includes('v=')) {
+            videoId = url.split('v=')[1].split('&')[0];
+        } else if (url.includes('embed/')) {
+            videoId = url.split('embed/')[1].split('?')[0];
+        }
+        
+        if (videoId) {
+            // Autoplay=1 enables autoplay, mute=0 allows sound (if browser permits)
+            return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&showinfo=0`;
+        }
+    } catch (e) {
+        console.error("Error parsing YouTube URL", e);
     }
     return null;
   };
 
-  // Aggressive Play Logic for Background Cards
+  // FIX: Reliable Autoplay Logic
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-        video.muted = true;
+        // React prop 'muted' isn't always enough for browser policies. 
+        // We must set the DOM property defaultMuted to true.
         video.defaultMuted = true;
+        video.muted = !isInlineUnmuted; // Sync with state
         
-        const playVideo = () => {
-          video.play().catch(err => {
-            console.warn("Autoplay blocked or failed:", err);
-          });
-        };
-
-        if (video.readyState >= 3) {
-            playVideo();
-        } else {
-            video.addEventListener('canplay', playVideo);
-            return () => video.removeEventListener('canplay', playVideo);
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                // Auto-play was prevented. This usually happens if user interaction hasn't occurred 
+                // or if the video is unmuted. We force mute to recover autoplay.
+                console.warn("Autoplay prevented, enforcing mute:", error);
+                video.muted = true;
+                video.play();
+            });
         }
     }
-  }, [activeIndex, isHovered]);
+  }, [activeIndex, isInlineUnmuted, currentSource]);
 
-  const handleCardClick = () => {
-    if (isCardPlaying) {
-      // Already playing, open the modal
-      setIsOpen(true);
+  // Logic: 1st Click = Unmute/Play Inline. 2nd Click = Open Modal.
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();    // Prevents link navigation/reloads
+    e.stopPropagation();   // Prevents bubbling to parent containers
+
+    if (!isInlineUnmuted) {
+        // Step 1: User wants to hear/watch the video in the card
+        setIsInlineUnmuted(true);
+        if(videoRef.current) {
+            videoRef.current.currentTime = 0; // Optional: Restart video from beginning on unmute
+            videoRef.current.muted = false;
+        }
     } else {
-      // First click: play the video in the card
-      const video = videoRef.current;
-      if (video) {
-        video.muted = false;
-        video.play();
-        setIsCardPlaying(true);
-      }
+        // Step 2: User clicked again, now they want the big screen
+        setIsOpen(true);
+        setIsInlineUnmuted(false); // Mute the background card so it doesn't overlap audio
     }
   };
+
+  const toggleOpen = () => {
+    setIsOpen(!isOpen);
+    // Ensure background card is muted when we close modal
+    if (isOpen) setIsInlineUnmuted(false);
+  };
+
   const navigate = (direction: 'next' | 'prev', e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+    if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+    }
     if (direction === 'next') {
         setActiveIndex((prev) => (prev + 1) % videoSources.length);
     } else {
         setActiveIndex((prev) => (prev - 1 + videoSources.length) % videoSources.length);
     }
+    // Reset inline mute status when changing videos
+    setIsInlineUnmuted(false);
   };
 
   const embedUrl = getYouTubeEmbedUrl(currentSource.fullUrl);
 
   return (
     <>
+        {/* Main Card */}
         <div 
             onClick={handleCardClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="w-full h-full bg-black relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg"
+            className="w-full h-full bg-black relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg select-none"
         >
             <video
                 key={`${id}-preview-${activeIndex}`}
                 ref={videoRef}
                 src={currentSource.previewUrl}
-                className="w-full h-full object-cover opacity-60 group-hover:opacity-90 transition-all duration-700 scale-105 group-hover:scale-100"
+                className={`w-full h-full object-cover transition-all duration-700 
+                    ${isHovered ? 'scale-100 opacity-90' : 'scale-105 opacity-60'}
+                    ${isInlineUnmuted ? 'opacity-100' : ''}
+                `}
                 loop
-                muted
                 playsInline
                 autoPlay
+                muted={!isInlineUnmuted} // Controlled by React state
             />
 
-            {/* Hover Info Overlay */}
-            <div className={`absolute inset-0 bg-black/40 transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'} flex items-center justify-center z-10`}>
-                <div className={`w-16 h-16 rounded-full bg-white flex items-center justify-center transition-transform duration-500 ${isHovered ? 'scale-100' : 'scale-50'}`}>
+            {/* Hover Overlay - Changes based on state */}
+            <div className={`absolute inset-0 bg-black/40 transition-opacity duration-500 
+                ${isHovered && !isInlineUnmuted ? 'opacity-100' : 'opacity-0'} 
+                flex items-center justify-center z-10 pointer-events-none`}>
+                <div className={`w-16 h-16 rounded-full bg-white flex items-center justify-center transition-transform duration-500 
+                    ${isHovered ? 'scale-100' : 'scale-50'}`}>
                     <Play className="w-6 h-6 text-black fill-black ml-1" />
                 </div>
             </div>
 
-            {/* Navigation Dots on Main Page */}
+            {/* If playing inline, show an "Expand" hint on hover */}
+            {isInlineUnmuted && isHovered && (
+                 <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                     <div className="bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+                        <Maximize2 className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Open Fullscreen</span>
+                     </div>
+                 </div>
+            )}
+
+            {/* Navigation Dots */}
             {videoSources.length > 1 && (
                 <div className="absolute bottom-6 right-6 z-30 flex gap-2">
                     {videoSources.map((_, idx) => (
@@ -127,6 +171,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setActiveIndex(idx);
+                                setIsInlineUnmuted(false);
                             }}
                             className={`w-2 h-2 rounded-full transition-all duration-300 shadow-md ${
                                 idx === activeIndex 
@@ -138,20 +183,32 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 </div>
             )}
 
-            {/* Sound Indicator */}
+            {/* Status Indicator (Bottom Left) */}
             <div className="absolute bottom-6 left-6 text-white flex items-center gap-2 z-20 transition-opacity duration-300">
-                <VolumeX className="w-3 h-3 opacity-50" />
-                <span className="text-[9px] font-bold tracking-widest uppercase opacity-50">Autoplay Muted</span>
+                {isInlineUnmuted ? (
+                    <>
+                        <Volume2 className="w-4 h-4 text-rose-500 animate-pulse" />
+                        <span className="text-[9px] font-bold tracking-widest uppercase text-white/90">Sound On</span>
+                    </>
+                ) : (
+                    <>
+                        <VolumeX className="w-3 h-3 opacity-50" />
+                        <span className="text-[9px] font-bold tracking-widest uppercase opacity-50">Preview Mode</span>
+                    </>
+                )}
             </div>
 
+            {/* Header Info */}
             <div className="absolute top-6 right-6 z-20 text-right mix-blend-difference pointer-events-none">
                 <span className="block text-white font-display font-bold text-3xl tracking-tight leading-none">{year}</span>
                 <span className="block text-white/70 font-english text-[10px] tracking-widest uppercase">{title}</span>
             </div>
         </div>
 
+        {/* Modal Portal */}
         {isOpen && createPortal(
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-2xl animate-[fadeIn_0.4s_ease-out]">
+                {/* Backdrop Click Closes */}
                 <div className="absolute inset-0" onClick={toggleOpen}></div>
                 
                 {/* Close Button */}
@@ -162,7 +219,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                     <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
                 </button>
 
-                {/* Modal Navigation - Arrows */}
+                {/* Modal Navigation Arrows */}
                 {videoSources.length > 1 && (
                     <>
                         <button 
@@ -180,6 +237,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                     </>
                 )}
 
+                {/* Modal Content */}
                 <div className="relative w-[95vw] md:w-[85vw] h-[65vh] md:h-[85vh] max-w-[1600px] bg-black rounded-3xl shadow-2xl overflow-hidden border border-white/10 flex flex-col z-20">
                     <div className="flex-grow relative bg-black">
                         {embedUrl ? (
@@ -210,7 +268,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                                 <span className="text-zinc-600 text-xs tracking-widest">| {year}</span>
                             </div>
                             
-                            {/* Mobile/Small Screen dots inside modal */}
+                            {/* Mobile dots inside modal */}
                             {videoSources.length > 1 && (
                                 <div className="flex gap-2 mt-1">
                                     {videoSources.map((_, idx) => (
@@ -239,12 +297,12 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                         </div>
                     </div>
                 </div>
-                <style>{`
-                    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                `}</style>
             </div>,
             document.body
         )}
+        <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        `}</style>
     </>
   );
 };
