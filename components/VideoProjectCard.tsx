@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2, Play } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
@@ -22,6 +22,14 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [origin, setOrigin] = useState('');
+
+  // Get current window origin to fix YouTube "Video Unavailable" errors
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
   
   const currentSource = videoSources[activeIndex];
 
@@ -34,18 +42,20 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
 
   const videoId = getYouTubeId(currentSource.previewUrl);
 
-  // 2. Thumbnails: 'hqdefault' ALWAYS exists. 'maxresdefault' often 404s.
-  const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+  // 2. Thumbnails: Use 'hqdefault' because 'maxresdefault' does not exist for all videos
+  const thumbnailUrl = videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '';
 
-  // 3. Simple Embeds
+  // 3. Embed URLs with Origin (Fixes blocking issues)
   const getEmbedUrl = (id: string | null, isPreview: boolean) => {
     if (!id) return '';
+    const baseUrl = `https://www.youtube.com/embed/${id}`;
+    
     if (isPreview) {
-        // Autoplay + Mute. No loop parameter (avoids 'Unavailable' error).
-        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&playsinline=1&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1`;
+        // Autoplay, Mute, No Controls, No Loop
+        return `${baseUrl}?autoplay=1&mute=1&controls=0&playsinline=1&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&origin=${origin}`;
     } else {
-        // Full player with sound
-        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&controls=1&playsinline=1&rel=0&iv_load_policy=3`;
+        // Sound ON, Controls
+        return `${baseUrl}?autoplay=1&mute=0&controls=1&playsinline=1&rel=0&iv_load_policy=3&origin=${origin}`;
     }
   };
 
@@ -77,17 +87,17 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
             onMouseLeave={() => setIsHovered(false)}
             className="w-full h-full bg-zinc-900 relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg"
         >
-            {/* 1. IMAGE BACKGROUND (Fallback) */}
+            {/* 1. BACKUP IMAGE (Visible if video fails/loads slow) */}
             {thumbnailUrl && (
                 <div 
-                    className="absolute inset-0 bg-cover bg-center z-0 scale-110 transition-transform duration-700 group-hover:scale-100"
+                    className="absolute inset-0 bg-cover bg-center z-0 scale-110 opacity-60"
                     style={{ backgroundImage: `url(${thumbnailUrl})` }}
                 />
             )}
 
-            {/* 2. VIDEO LAYER */}
+            {/* 2. YOUTUBE IFRAME */}
             <div className="absolute inset-0 w-full h-full pointer-events-none scale-[1.35] z-10 transition-opacity duration-500"> 
-                {videoId && (
+                {videoId && origin && (
                     <iframe
                         key={`preview-${activeIndex}`}
                         src={getEmbedUrl(videoId, true)}
@@ -99,26 +109,31 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 )}
             </div>
 
-            {/* 3. OVERLAYS */}
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none z-20"></div>
+            {/* 3. INTERACTION LAYERS */}
+            {/* Darken Overlay */}
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none z-20"></div>
 
-            {/* Centered Play Button */}
+            {/* Expand Button */}
             <div className={`absolute inset-0 flex items-center justify-center z-30 pointer-events-none transition-all duration-300 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-xl">
-                    <Play className="w-6 h-6 text-white ml-1 fill-white" />
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2 rounded-full flex items-center gap-2 shadow-2xl">
+                    <Maximize2 className="w-4 h-4" />
+                    <span className="font-bold tracking-widest text-xs uppercase">Expand</span>
                 </div>
             </div>
 
+            {/* Status Icon */}
             <div className="absolute bottom-6 left-6 z-30 flex items-center gap-2 text-white/80 pointer-events-none">
                 <VolumeX className="w-4 h-4 drop-shadow-md" />
                 <span className="text-[10px] font-bold tracking-widest uppercase drop-shadow-md">Preview</span>
             </div>
 
+            {/* Header Text */}
             <div className="absolute top-6 right-6 z-30 text-right mix-blend-difference pointer-events-none">
                 <span className="block text-white font-display font-bold text-3xl tracking-tight leading-none drop-shadow-md">{year}</span>
                 <span className="block text-white/70 font-english text-[10px] tracking-widest uppercase drop-shadow-md">{title}</span>
             </div>
 
+            {/* Navigation Dots */}
             {videoSources.length > 1 && (
                 <div className="absolute bottom-6 right-6 z-40 flex gap-2">
                     {videoSources.map((_, idx) => (
@@ -145,7 +160,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
 
                 <div className="relative w-[95vw] md:w-[85vw] h-[60vh] md:h-[85vh] max-w-[1600px] bg-black rounded-3xl border border-white/10 flex flex-col z-20 overflow-hidden shadow-2xl">
                     <div className="flex-grow relative bg-black flex items-center justify-center">
-                        {videoId && (
+                        {videoId && origin && (
                             <iframe 
                                 src={getEmbedUrl(videoId, false)}
                                 className="w-full h-full absolute inset-0" 
