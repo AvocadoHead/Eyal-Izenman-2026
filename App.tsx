@@ -121,6 +121,7 @@ const App: React.FC = () => {
     }
   ];
 
+  // 🔴 YOUR SPECIFIC VIDEOS
   const currentProjects: Project[] = [
     {
       id: 'showreel',
@@ -134,8 +135,8 @@ const App: React.FC = () => {
                     title="Showreel"
                     videoSources={[
                       {
-                        previewUrl: "https://youtu.be/3j9_y-s5_DI",
-                        fullUrl: "https://youtu.be/3j9_y-s5_DI" 
+                        previewUrl: "https://www.youtube.com/watch?v=mkjYn2cRhrI",
+                        fullUrl: "https://www.youtube.com/watch?v=mkjYn2cRhrI" 
                       }
                     ]}
                  />
@@ -152,12 +153,20 @@ const App: React.FC = () => {
                     title="Surrealness"
                     videoSources={[
                       {
-                        previewUrl: "https://youtu.be/h_yqJ-r_SgE",
-                        fullUrl: "https://youtu.be/h_yqJ-r_SgE"
+                        previewUrl: "https://www.youtube.com/watch?v=Re2V2zprjNo",
+                        fullUrl: "https://www.youtube.com/watch?v=Re2V2zprjNo"
                       },
                       {
-                        previewUrl: "https://youtu.be/qM-jY_x_V_k",
-                        fullUrl: "https://youtu.be/qM-jY_x_V_k"
+                        previewUrl: "https://www.youtube.com/watch?v=a0RhwpbhnCA",
+                        fullUrl: "https://www.youtube.com/watch?v=a0RhwpbhnCA"
+                      },
+                      {
+                        previewUrl: "https://www.youtube.com/watch?v=3K25zquwnUE",
+                        fullUrl: "https://www.youtube.com/watch?v=3K25zquwnUE"
+                      },
+                      {
+                        previewUrl: "https://www.youtube.com/watch?v=h9MQ6L4H72o",
+                        fullUrl: "https://www.youtube.com/watch?v=h9MQ6L4H72o"
                       }
                     ]}
                  />
