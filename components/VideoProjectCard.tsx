@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2 } from 'lucide-react';
+import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2, Play } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 export interface VideoSource {
@@ -25,6 +25,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   
   const currentSource = videoSources[activeIndex];
 
+  // 1. Extract YouTube ID
   const getYouTubeId = (url: string) => {
     if (!url) return null;
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([^?&"'>]+)/);
@@ -33,16 +34,20 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
 
   const videoId = getYouTubeId(currentSource.previewUrl);
 
+  // 2. Thumbnails: 'hqdefault' ALWAYS exists. 'maxresdefault' often 404s.
+  const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+
+  // 3. Simple Embeds
   const getEmbedUrl = (id: string | null, isPreview: boolean) => {
     if (!id) return '';
     if (isPreview) {
-        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&playsinline=1&showinfo=0&rel=0&iv_load_policy=3`;
+        // Autoplay + Mute. No loop parameter (avoids 'Unavailable' error).
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&playsinline=1&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1`;
     } else {
+        // Full player with sound
         return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&controls=1&playsinline=1&rel=0&iv_load_policy=3`;
     }
   };
-
-  const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -72,13 +77,15 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
             onMouseLeave={() => setIsHovered(false)}
             className="w-full h-full bg-zinc-900 relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg"
         >
+            {/* 1. IMAGE BACKGROUND (Fallback) */}
             {thumbnailUrl && (
                 <div 
-                    className="absolute inset-0 bg-cover bg-center z-0 scale-105"
+                    className="absolute inset-0 bg-cover bg-center z-0 scale-110 transition-transform duration-700 group-hover:scale-100"
                     style={{ backgroundImage: `url(${thumbnailUrl})` }}
                 />
             )}
 
+            {/* 2. VIDEO LAYER */}
             <div className="absolute inset-0 w-full h-full pointer-events-none scale-[1.35] z-10 transition-opacity duration-500"> 
                 {videoId && (
                     <iframe
@@ -92,12 +99,13 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 )}
             </div>
 
+            {/* 3. OVERLAYS */}
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none z-20"></div>
 
+            {/* Centered Play Button */}
             <div className={`absolute inset-0 flex items-center justify-center z-30 pointer-events-none transition-all duration-300 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2 rounded-full flex items-center gap-2 shadow-2xl">
-                    <Maximize2 className="w-4 h-4" />
-                    <span className="font-bold tracking-widest text-xs uppercase">Expand</span>
+                <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-xl">
+                    <Play className="w-6 h-6 text-white ml-1 fill-white" />
                 </div>
             </div>
 
@@ -126,6 +134,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
             )}
         </div>
 
+        {/* MODAL */}
         {isOpen && createPortal(
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-[fadeIn_0.3s_ease-out]">
                 <div className="absolute inset-0" onClick={handleModalClose}></div>
