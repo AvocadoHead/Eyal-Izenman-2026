@@ -132,10 +132,12 @@ const App: React.FC = () => {
                     id="showreel"
                     year="2025"
                     title="Showreel"
-                    // UPDATED: Your real Showreel URL
-                    previewVideoUrl="https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706342/showreel_optimized_nwxcsa.mp4"
-                    fullVideoEmbedUrl="" 
-                    fullVideoDirectUrl="https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706342/showreel_optimized_nwxcsa.mp4"
+                    videoSources={[
+                      {
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706342/showreel_optimized_nwxcsa.mp4",
+                        fullUrl: "https://youtube.com/shorts/mkjYn2cRhrI"
+                      }
+                    ]}
                  />
     },
     {
@@ -148,27 +150,22 @@ const App: React.FC = () => {
                     id="surreal"
                     year="2025"
                     title="Surrealness"
-                    // UPDATED: Your 4 Cloudinary Video URLs
                     videoSources={[
                       {
                         previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706249/01_surreal_ygcx7s.mp4",
-                        fullEmbedUrl: "",
-                        fullDirectUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706249/01_surreal_ygcx7s.mp4"
+                        fullUrl: "https://youtube.com/shorts/Re2V2zprjNo"
                       },
                       {
                         previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706225/02_surreal_wluqox.mp4",
-                        fullEmbedUrl: "",
-                        fullDirectUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706225/02_surreal_wluqox.mp4"
+                        fullUrl: "https://youtube.com/shorts/a0RhwpbhnCA"
                       },
                       {
                         previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706253/03_surreal_hfk5l9.mp4",
-                        fullEmbedUrl: "",
-                        fullDirectUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706253/03_surreal_hfk5l9.mp4"
+                        fullUrl: "https://youtu.be/3K25zquwnUE"
                       },
                       {
                         previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706227/04_surreal_buj6v1.mp4",
-                        fullEmbedUrl: "",
-                        fullDirectUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706227/04_surreal_buj6v1.mp4"
+                        fullUrl: "https://youtu.be/h9MQ6L4H72o"
                       }
                     ]}
                  />
@@ -244,12 +241,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 relative font-sans selection:bg-rose-200 overflow-x-hidden" dir="ltr">
-      {/* Texture Layer */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.04] z-0" 
            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}>
       </div>
 
-      {/* Language Toggle */}
       <button onClick={toggleLanguage} className="fixed top-6 right-6 md:right-auto md:left-6 z-50 bg-white/50 hover:bg-white backdrop-blur-sm border border-slate-200 p-2 rounded-full shadow-sm transition-all group flex items-center gap-2">
         <Globe className="w-5 h-5 text-slate-600" />
         <span className="text-[10px] font-bold font-english uppercase tracking-widest text-slate-500 w-0 overflow-hidden group-hover:w-auto group-hover:px-1 transition-all duration-300">
@@ -257,13 +252,11 @@ const App: React.FC = () => {
         </span>
       </button>
 
-      {/* Floating Contact */}
       <a href="https://wa.me/97236030603" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-110 transition-all flex items-center justify-center">
         <MessageCircle className="w-6 h-6 fill-current" />
       </a>
 
       <main className="relative z-10" ref={containerRef}>
-        {/* Hero Section */}
         <section className="pt-32 pb-40 px-6 md:px-12 flex flex-col md:flex-row items-center md:items-start justify-center gap-8 md:gap-16 relative z-20">
             <div className="relative group shrink-0">
                 <div className="w-40 h-40 md:w-56 md:h-56 rounded-full overflow-hidden border-[1px] border-slate-200 shadow-2xl relative z-10 bg-white">
@@ -284,10 +277,8 @@ const App: React.FC = () => {
             </div>
         </section>
 
-        {/* The Generative Line / Background Animation */}
         <NarrativeLine scrollProgress={scrollProgress} />
 
-        {/* Projects Grid */}
         <section className="max-w-7xl mx-auto px-6 pb-48 pt-0 relative">
             <div className="flex flex-col w-full gap-56">
                 {currentProjects.map((project, index) => (
@@ -296,7 +287,6 @@ const App: React.FC = () => {
             </div>
         </section>
 
-        {/* Courses Section */}
         <section className="relative pt-32 pb-32">
              <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-[#f8fafc] via-white to-transparent z-10"></div>
              <div className="text-center mb-24 relative z-20" dir={textDir}>
@@ -306,7 +296,6 @@ const App: React.FC = () => {
              <CourseSection courses={currentCourses} onSelectCourse={handleCourseSelect} textDir={textDir} currentLang={lang} onToggleLang={toggleLanguage} />
         </section>
 
-        {/* Footer */}
         <footer className="py-20 bg-slate-900 text-slate-400 text-sm border-t border-slate-800">
             <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6" dir="ltr">
                 <p className="font-english opacity-60">&copy; {new Date().getFullYear()} {t.footerRights} Eyal Izenman.</p>
@@ -319,7 +308,6 @@ const App: React.FC = () => {
         </footer>
       </main>
 
-      {/* Modals */}
       <CourseModal course={selectedCourse} onClose={handleCourseClose} textDir={textDir} currentLang={lang} onToggleLang={toggleLanguage} />
     </div>
   );
