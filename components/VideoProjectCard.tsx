@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2, Play } from 'lucide-react';
+import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2, Play, AlertCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 export interface VideoSource {
@@ -23,39 +23,37 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [origin, setOrigin] = useState('');
+  const [imgError, setImgError] = useState(false);
 
-  // Get current window origin to fix YouTube "Video Unavailable" errors
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin);
-    }
+    if (typeof window !== 'undefined') setOrigin(window.location.origin);
   }, []);
   
   const currentSource = videoSources[activeIndex];
 
-  // 1. Extract YouTube ID
+  // 1. Extract ID
   const getYouTubeId = (url: string) => {
     if (!url) return null;
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([^?&"'>]+)/);
-    return (match && match[1]) ? match[1].slice(0, 11) : null;
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|watch\?v=))([^?&"'>]{11})/);
+    return match ? match[1] : null;
   };
 
   const videoId = getYouTubeId(currentSource.previewUrl);
 
-  // 2. Thumbnails: Use 'hqdefault' because 'maxresdefault' does not exist for all videos
-  const thumbnailUrl = videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '';
+  // 2. Thumbnail Fallback (mqdefault exists for 100% of videos)
+  const thumbnailUrl = videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : '';
 
-  // 3. Embed URLs with Origin (Fixes blocking issues)
+  // 3. Embed URL
   const getEmbedUrl = (id: string | null, isPreview: boolean) => {
     if (!id) return '';
-    const baseUrl = `https://www.youtube.com/embed/${id}`;
+    const base = `https://www.youtube.com/embed/${id}`;
+    // 'origin' fixes the "Unavailable" error on some domains
+    const settings = `origin=${origin}&iv_load_policy=3&modestbranding=1&playsinline=1&rel=0&showinfo=0`;
     
     if (isPreview) {
-        // Autoplay, Mute, No Controls, No Loop
-        return `${baseUrl}?autoplay=1&mute=1&controls=0&playsinline=1&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&origin=${origin}`;
+        return `${base}?autoplay=1&mute=1&controls=0&${settings}`;
     } else {
-        // Sound ON, Controls
-        return `${baseUrl}?autoplay=1&mute=0&controls=1&playsinline=1&rel=0&iv_load_policy=3&origin=${origin}`;
+        return `${base}?autoplay=1&mute=0&controls=1&${settings}`;
     }
   };
 
@@ -72,11 +70,11 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
 
   const navigate = (direction: 'next' | 'prev', e: React.MouseEvent) => {
     e.stopPropagation();
-    if (direction === 'next') {
-        setActiveIndex((prev) => (prev + 1) % videoSources.length);
-    } else {
-        setActiveIndex((prev) => (prev - 1 + videoSources.length) % videoSources.length);
-    }
+    const newIndex = direction === 'next' 
+      ? (activeIndex + 1) % videoSources.length
+      : (activeIndex - 1 + videoSources.length) % videoSources.length;
+    setActiveIndex(newIndex);
+    setImgError(false);
   };
 
   return (
@@ -85,21 +83,21 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
             onClick={handleCardClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="w-full h-full bg-zinc-900 relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg"
+            className="w-full h-full bg-zinc-800 relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg"
         >
-            {/* 1. BACKUP IMAGE (Visible if video fails/loads slow) */}
-            {thumbnailUrl && (
+            {/* 1. BACKUP IMAGE */}
+            {thumbnailUrl && !imgError && (
                 <div 
                     className="absolute inset-0 bg-cover bg-center z-0 scale-110 opacity-60"
                     style={{ backgroundImage: `url(${thumbnailUrl})` }}
                 />
             )}
 
-            {/* 2. YOUTUBE IFRAME */}
+            {/* 2. VIDEO PREVIEW */}
             <div className="absolute inset-0 w-full h-full pointer-events-none scale-[1.35] z-10 transition-opacity duration-500"> 
-                {videoId && origin && (
+                {videoId && (
                     <iframe
-                        key={`preview-${activeIndex}`}
+                        key={`preview-${videoId}`}
                         src={getEmbedUrl(videoId, true)}
                         className="w-full h-full object-cover"
                         allow="autoplay; encrypted-media"
@@ -110,8 +108,8 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
             </div>
 
             {/* 3. INTERACTION LAYERS */}
-            {/* Darken Overlay */}
-            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none z-20"></div>
+            <div className="absolute inset-0 z-20 bg-transparent"></div>
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none z-20"></div>
 
             {/* Expand Button */}
             <div className={`absolute inset-0 flex items-center justify-center z-30 pointer-events-none transition-all duration-300 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
@@ -121,13 +119,13 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 </div>
             </div>
 
-            {/* Status Icon */}
+            {/* Status */}
             <div className="absolute bottom-6 left-6 z-30 flex items-center gap-2 text-white/80 pointer-events-none">
                 <VolumeX className="w-4 h-4 drop-shadow-md" />
                 <span className="text-[10px] font-bold tracking-widest uppercase drop-shadow-md">Preview</span>
             </div>
 
-            {/* Header Text */}
+            {/* Header */}
             <div className="absolute top-6 right-6 z-30 text-right mix-blend-difference pointer-events-none">
                 <span className="block text-white font-display font-bold text-3xl tracking-tight leading-none drop-shadow-md">{year}</span>
                 <span className="block text-white/70 font-english text-[10px] tracking-widest uppercase drop-shadow-md">{title}</span>
@@ -160,13 +158,18 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
 
                 <div className="relative w-[95vw] md:w-[85vw] h-[60vh] md:h-[85vh] max-w-[1600px] bg-black rounded-3xl border border-white/10 flex flex-col z-20 overflow-hidden shadow-2xl">
                     <div className="flex-grow relative bg-black flex items-center justify-center">
-                        {videoId && origin && (
+                        {videoId ? (
                             <iframe 
                                 src={getEmbedUrl(videoId, false)}
                                 className="w-full h-full absolute inset-0" 
                                 allow="autoplay; fullscreen; picture-in-picture" 
                                 title={title} 
                             />
+                        ) : (
+                            <div className="text-white flex flex-col items-center">
+                                <AlertCircle className="w-12 h-12 mb-4 text-red-500" />
+                                <span>Video Source Error</span>
+                            </div>
                         )}
                         
                         {videoSources.length > 1 && (
@@ -186,9 +189,11 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                             <h3 className="text-white font-bold uppercase tracking-wider text-sm">{title}</h3>
                             {videoSources.length > 1 && <span className="text-zinc-500 text-[10px] tracking-widest">{activeIndex + 1} / {videoSources.length}</span>}
                          </div>
-                         <a href={currentSource.fullUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-400 hover:text-white text-xs font-bold uppercase transition-colors">
-                            <Monitor className="w-4 h-4" /> <span className="hidden sm:inline">Watch on YouTube</span> <ExternalLink className="w-3 h-3" />
-                         </a>
+                         {currentSource.fullUrl && (
+                             <a href={currentSource.fullUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-400 hover:text-white text-xs font-bold uppercase transition-colors">
+                                <Monitor className="w-4 h-4" /> <span className="hidden sm:inline">Watch on YouTube</span> <ExternalLink className="w-3 h-3" />
+                             </a>
+                         )}
                     </div>
                 </div>
             </div>,
