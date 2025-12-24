@@ -135,7 +135,8 @@ const App: React.FC = () => {
                     videoSources={[
                       {
                         previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706342/showreel_optimized_nwxcsa.mp4",
-                        fullUrl: "https://youtube.com/shorts/mkjYn2cRhrI"
+                        // Fallback to the MP4 so the modal works. Replace this with a YouTube link if you have one.
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706342/showreel_optimized_nwxcsa.mp4"
                       }
                     ]}
                  />
@@ -153,19 +154,19 @@ const App: React.FC = () => {
                     videoSources={[
                       {
                         previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706249/01_surreal_ygcx7s.mp4",
-                        fullUrl: "https://youtube.com/shorts/Re2V2zprjNo"
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706249/01_surreal_ygcx7s.mp4"
                       },
                       {
                         previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706225/02_surreal_wluqox.mp4",
-                        fullUrl: "https://youtube.com/shorts/a0RhwpbhnCA"
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706225/02_surreal_wluqox.mp4"
                       },
                       {
                         previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706253/03_surreal_hfk5l9.mp4",
-                        fullUrl: "https://youtu.be/3K25zquwnUE"
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706253/03_surreal_hfk5l9.mp4"
                       },
                       {
                         previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706227/04_surreal_buj6v1.mp4",
-                        fullUrl: "https://youtu.be/h9MQ6L4H72o"
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706227/04_surreal_buj6v1.mp4"
                       }
                     ]}
                  />
