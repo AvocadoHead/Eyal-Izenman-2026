@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, X, Volume2, VolumeX, Monitor, ExternalLink, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Play, X, Volume2, VolumeX, Monitor, ExternalLink } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 export interface VideoSource {
-  previewUrl: string; // The MP4 for the card
+  previewUrl: string; // Direct MP4 for the card background
   fullEmbedUrl: string; // The iframe URL (YouTube/Vimeo)
   fullDirectUrl: string; // Link to external site
 }
@@ -12,7 +12,7 @@ interface VideoProjectCardProps {
   id: string;
   year: string;
   title: string;
-  // Legacy props (for single video cards)
+  // Legacy props for single video cards
   previewVideoUrl?: string;
   fullVideoEmbedUrl?: string;
   fullVideoDirectUrl?: string;
@@ -34,18 +34,18 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Determine current source based on whether we have a list or single props
+  // Normalize data: use videoSources if available, otherwise fallback to single props
   const sources = videoSources || [{
     previewUrl: previewVideoUrl || '',
     fullEmbedUrl: fullVideoEmbedUrl || '',
     fullDirectUrl: fullVideoDirectUrl || ''
   }];
-  
+
   const currentSource = sources[activeIndex];
 
-  // Handle Video Source Change
+  // Handle switching videos via dots
   const handleDotClick = (e: React.MouseEvent, index: number) => {
-    e.stopPropagation(); // Prevent modal from opening
+    e.stopPropagation(); // Prevent opening the modal
     setActiveIndex(index);
   };
 
@@ -53,14 +53,14 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-        // Reload video source when index changes
-        video.load();
+        // Force reload when index changes
+        video.load(); 
         
         video.muted = !isHovered;
         const playPromise = video.play();
         if (playPromise !== undefined) {
             playPromise.catch(() => {
-                // Autoplay prevented
+                // Autoplay was prevented (usually due to browser policy if unmuted)
             });
         }
     }
@@ -68,7 +68,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
 
   const toggleOpen = () => setIsOpen(!isOpen);
 
-  // Append autoplay to iframe url
+  // Append autoplay to the iframe URL
   const embedUrlWithAutoplay = currentSource.fullEmbedUrl.includes('?') 
     ? `${currentSource.fullEmbedUrl}&autoplay=1` 
     : `${currentSource.fullEmbedUrl}?autoplay=1`;
@@ -106,21 +106,21 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 </span>
             </div>
 
-            {/* Video Toggle Dots (Only if multiple sources exist) */}
+            {/* Navigation Dots (Only if multiple sources) */}
             {sources.length > 1 && (
-              <div className="absolute bottom-6 right-6 z-30 flex gap-2">
-                {sources.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={(e) => handleDotClick(e, idx)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      idx === activeIndex 
-                        ? 'bg-white scale-125' 
-                        : 'bg-white/30 hover:bg-white/60'
-                    }`}
-                  />
-                ))}
-              </div>
+                <div className="absolute bottom-6 right-6 z-30 flex gap-2">
+                    {sources.map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={(e) => handleDotClick(e, idx)}
+                            className={`w-2 h-2 rounded-full transition-all duration-300 shadow-md ${
+                                idx === activeIndex 
+                                    ? 'bg-white scale-125' 
+                                    : 'bg-white/40 hover:bg-white/80'
+                            }`}
+                        />
+                    ))}
+                </div>
             )}
 
             {/* Title Info */}
