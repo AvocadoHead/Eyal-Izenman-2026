@@ -132,10 +132,10 @@ const App: React.FC = () => {
                     id="showreel"
                     year="2025"
                     title="Showreel"
-                    // Standard single video props
-                    previewVideoUrl="https://assets.mixkit.co/videos/preview/mixkit-abstract-texture-of-black-and-white-lines-and-dots-33479-large.mp4"
-                    fullVideoEmbedUrl="#"
-                    fullVideoDirectUrl="#"
+                    // UPDATED: Your real Showreel URL
+                    previewVideoUrl="https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706342/showreel_optimized_nwxcsa.mp4"
+                    fullVideoEmbedUrl="" 
+                    fullVideoDirectUrl="https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706342/showreel_optimized_nwxcsa.mp4"
                  />
     },
     {
@@ -148,28 +148,27 @@ const App: React.FC = () => {
                     id="surreal"
                     year="2025"
                     title="Surrealness"
-                    // New multi-video prop. 
-                    // IMPORTANT: Replace the INSERT_ strings below with your actual URLs.
+                    // UPDATED: Your 4 Cloudinary Video URLs
                     videoSources={[
                       {
-                        previewUrl: "INSERT_VIDEO_1_PREVIEW_URL.mp4",
-                        fullEmbedUrl: "INSERT_VIDEO_1_EMBED_URL",
-                        fullDirectUrl: "INSERT_VIDEO_1_DIRECT_URL"
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706249/01_surreal_ygcx7s.mp4",
+                        fullEmbedUrl: "",
+                        fullDirectUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706249/01_surreal_ygcx7s.mp4"
                       },
                       {
-                        previewUrl: "INSERT_VIDEO_2_PREVIEW_URL.mp4",
-                        fullEmbedUrl: "INSERT_VIDEO_2_EMBED_URL",
-                        fullDirectUrl: "INSERT_VIDEO_2_DIRECT_URL"
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706225/02_surreal_wluqox.mp4",
+                        fullEmbedUrl: "",
+                        fullDirectUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706225/02_surreal_wluqox.mp4"
                       },
                       {
-                        previewUrl: "INSERT_VIDEO_3_PREVIEW_URL.mp4",
-                        fullEmbedUrl: "INSERT_VIDEO_3_EMBED_URL",
-                        fullDirectUrl: "INSERT_VIDEO_3_DIRECT_URL"
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706253/03_surreal_hfk5l9.mp4",
+                        fullEmbedUrl: "",
+                        fullDirectUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706253/03_surreal_hfk5l9.mp4"
                       },
                       {
-                        previewUrl: "INSERT_VIDEO_4_PREVIEW_URL.mp4",
-                        fullEmbedUrl: "INSERT_VIDEO_4_EMBED_URL",
-                        fullDirectUrl: "INSERT_VIDEO_4_DIRECT_URL"
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706227/04_surreal_buj6v1.mp4",
+                        fullEmbedUrl: "",
+                        fullDirectUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706227/04_surreal_buj6v1.mp4"
                       }
                     ]}
                  />
