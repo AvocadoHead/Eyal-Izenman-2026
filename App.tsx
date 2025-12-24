@@ -15,8 +15,8 @@ type Language = 'he' | 'en';
 const CONTENT = {
   he: {
     name: 'איל איזנמן',
-    roles: ['Motion Artist', 'בינאי', 'Educator'], 
-    bio: 'אני מחבר בין סיפורים לטכנולוגיה. יוצר חוויות ויזואליות שמשלבות רגש אנושי עם הקצה של הבינה המלאכותית.',
+    roles: ['אפטריסט', 'בינאי', 'מחנך'], 
+    bio: 'סטוריטלר טכנוקרט. בורא חוויות ויזואליות שמעוררות רגש בקצה הבינה המלאכותית.',
     coursesTitle: 'ללמוד מהניסיון שלי',
     coursesSubtitle: 'קורסים מעשיים לשנת 2025.',
     footerRights: 'כל הזכויות שמורות',
@@ -48,8 +48,8 @@ const CONTENT = {
   },
   en: {
     name: 'Eyal Izenman',
-    roles: ['Motion Artist', 'Generative AI Enthusiast', 'Educator'],
-    bio: 'Bridging stories and technology. Creating visual experiences that fuse human emotion with the cutting edge of Artificial Intelligence.',
+    roles: ['After Effects Artist', 'Generative AI Enthusiast', 'Educator'],
+    bio: 'Technocratic Storyteller. Crafting visual experiences that evoke emotion on the cutting edge of Artificial Intelligence.',
     coursesTitle: 'Learn from Experience',
     coursesSubtitle: 'Practical courses for 2025.',
     footerRights: 'All rights reserved',
