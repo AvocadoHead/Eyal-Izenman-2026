@@ -134,8 +134,8 @@ const App: React.FC = () => {
                     title="Showreel"
                     // Use the single URL props for the showreel
                     previewVideoUrl="https://assets.mixkit.co/videos/preview/mixkit-abstract-texture-of-black-and-white-lines-and-dots-33479-large.mp4"
-                    fullVideoEmbedUrl="#"
-                    fullVideoDirectUrl="#"
+                    fullVideoEmbedUrl="https://www.youtube.com/embed/mkjYn2cRhrI"
+                    fullVideoDirectUrl="https://youtube.com/shorts/mkjYn2cRhrI"
                  />
     },
     {
@@ -151,24 +151,24 @@ const App: React.FC = () => {
                     // Here we use the NEW prop for the 4 videos you requested
                     videoSources={[
                       {
-                        previewUrl: "INSERT_YOUR_URL_1_HERE.mp4",
-                        fullEmbedUrl: "INSERT_IFRAME_URL_1_HERE",
-                        fullDirectUrl: "INSERT_DIRECT_LINK_1_HERE"
+                        previewUrl: "INSERThttps://youtube.com/shorts/Re2V2zprjNo
+                        fullEmbedUrl: "INSERThttps://www.youtube.com/embed/Re2V2zprjNo
+                        fullDirectUrl: "INSERThttps://youtube.com/shorts/Re2V2zprjNo
                       },
                       {
-                        previewUrl: "INSERT_YOUR_URL_2_HERE.mp4",
-                        fullEmbedUrl: "INSERT_IFRAME_URL_2_HERE",
-                        fullDirectUrl: "INSERT_DIRECT_LINK_2_HERE"
+                        previewUrl: "INSERThttps://youtube.com/shorts/a0RhwpbhnCA
+                        fullEmbedUrl: "INSERThttps://www.youtube.com/embed/a0RhwpbhnCA
+                        fullDirectUrl: "INSERThttps://youtube.com/shorts/a0RhwpbhnCA
                       },
                       {
-                        previewUrl: "INSERT_YOUR_URL_3_HERE.mp4",
-                        fullEmbedUrl: "INSERT_IFRAME_URL_3_HERE",
-                        fullDirectUrl: "INSERT_DIRECT_LINK_3_HERE"
+                        previewUrl: "INSERThttps://youtu.be/3K25zquwnUE
+                        fullEmbedUrl: "INSERThttps://www.youtube.com/embed/3K25zquwnUE
+                        fullDirectUrl: "INSERThttps://youtu.be/3K25zquwnUE
                       },
                       {
-                        previewUrl: "INSERT_YOUR_URL_4_HERE.mp4",
-                        fullEmbedUrl: "INSERT_IFRAME_URL_4_HERE",
-                        fullDirectUrl: "INSERT_DIRECT_LINK_4_HERE"
+                        previewUrl: "tps://youtu.be/h9MQ6L4H72Q
+                        fullEmbedUrl: "https://www.youtube.com/embed/mkjYn2cNhrI,
+                        fullDirectUrl: "https://youtu.be/h9MQ6L4H72Q
                       }
                     ]}
                  />
