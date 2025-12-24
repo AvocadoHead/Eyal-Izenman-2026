@@ -121,7 +121,6 @@ const App: React.FC = () => {
     }
   ];
 
-  // 🔴 UPDATED PROJECTS WITH YOUR YOUTUBE LINKS
   const currentProjects: Project[] = [
     {
       id: 'showreel',
@@ -135,7 +134,6 @@ const App: React.FC = () => {
                     title="Showreel"
                     videoSources={[
                       {
-                        // We use the same Youtube URL for both Preview (muted loop) and Full (sound)
                         previewUrl: "https://youtu.be/3j9_y-s5_DI",
                         fullUrl: "https://youtu.be/3j9_y-s5_DI" 
                       }
