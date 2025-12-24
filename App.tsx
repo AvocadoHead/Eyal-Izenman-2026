@@ -121,6 +121,7 @@ const App: React.FC = () => {
     }
   ];
 
+  // 🔴 UPDATED PROJECTS WITH YOUR YOUTUBE LINKS
   const currentProjects: Project[] = [
     {
       id: 'showreel',
@@ -134,10 +135,9 @@ const App: React.FC = () => {
                     title="Showreel"
                     videoSources={[
                       {
-                        // ⚠️ YOUR LINKS WERE BROKEN (404). I replaced them with a test video.
-                        // REPLACE these URLs with your valid Cloudinary link when ready.
-                        previewUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                        fullUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                        // We use the same Youtube URL for both Preview (muted loop) and Full (sound)
+                        previewUrl: "https://youtu.be/3j9_y-s5_DI",
+                        fullUrl: "https://youtu.be/3j9_y-s5_DI" 
                       }
                     ]}
                  />
@@ -154,13 +154,12 @@ const App: React.FC = () => {
                     title="Surrealness"
                     videoSources={[
                       {
-                        // ⚠️ YOUR LINKS WERE BROKEN (404). I replaced them with test videos.
-                        previewUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                        fullUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+                        previewUrl: "https://youtu.be/h_yqJ-r_SgE",
+                        fullUrl: "https://youtu.be/h_yqJ-r_SgE"
                       },
                       {
-                        previewUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                        fullUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                        previewUrl: "https://youtu.be/qM-jY_x_V_k",
+                        fullUrl: "https://youtu.be/qM-jY_x_V_k"
                       }
                     ]}
                  />
