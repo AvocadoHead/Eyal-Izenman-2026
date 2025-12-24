@@ -3,8 +3,8 @@ import { Play, X, Volume2, VolumeX, Monitor, ExternalLink, ChevronLeft, ChevronR
 import { createPortal } from 'react-dom';
 
 export interface VideoSource {
-  previewUrl: string; // Direct MP4 for card background
-  fullUrl: string;    // YouTube URL or direct MP4 for Modal
+  previewUrl: string; // Direct MP4 (Cloudinary)
+  fullUrl: string;    // YouTube URL
 }
 
 interface VideoProjectCardProps {
@@ -24,154 +24,152 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   
-  // New State: Controls whether the card video is muted or hearing audio
-  const [isInlineUnmuted, setIsInlineUnmuted] = useState(false);
-  
+  // State to track if the user has clicked once to unmute the card
+  const [isInlineActive, setIsInlineActive] = useState(false);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const currentSource = videoSources[activeIndex];
 
-  // Helper: Robust YouTube ID extraction
+  // --- YouTube Helper ---
   const getYouTubeEmbedUrl = (url: string) => {
     if (!url) return null;
     let videoId = '';
-    
     try {
-        if (url.includes('shorts/')) {
-            videoId = url.split('shorts/')[1].split('?')[0];
-        } else if (url.includes('youtu.be/')) {
-            videoId = url.split('youtu.be/')[1].split('?')[0];
-        } else if (url.includes('v=')) {
-            videoId = url.split('v=')[1].split('&')[0];
-        } else if (url.includes('embed/')) {
-            videoId = url.split('embed/')[1].split('?')[0];
-        }
+        if (url.includes('shorts/')) videoId = url.split('shorts/')[1].split('?')[0];
+        else if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
+        else if (url.includes('v=')) videoId = url.split('v=')[1].split('&')[0];
+        else if (url.includes('embed/')) videoId = url.split('embed/')[1].split('?')[0];
         
-        if (videoId) {
-            // Autoplay=1 enables autoplay, mute=0 allows sound (if browser permits)
-            return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&showinfo=0`;
-        }
-    } catch (e) {
-        console.error("Error parsing YouTube URL", e);
-    }
+        if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&showinfo=0`;
+    } catch (e) { console.error("Error parsing YouTube URL", e); }
     return null;
   };
 
-  // FIX: Reliable Autoplay Logic
+  // --- 1. Robust Autoplay Setup ---
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-        // React prop 'muted' isn't always enough for browser policies. 
-        // We must set the DOM property defaultMuted to true.
+        // Crucial for React/Chrome: defaultMuted allows autoplay to start
         video.defaultMuted = true;
-        video.muted = !isInlineUnmuted; // Sync with state
+        video.muted = !isInlineActive; 
         
+        // Try to play immediately on mount/change
         const playPromise = video.play();
         if (playPromise !== undefined) {
             playPromise.catch(error => {
-                // Auto-play was prevented. This usually happens if user interaction hasn't occurred 
-                // or if the video is unmuted. We force mute to recover autoplay.
-                console.warn("Autoplay prevented, enforcing mute:", error);
+                // If autoplay fails, force mute and try again (browser policy fallback)
+                console.log("Autoplay recovered by muting");
                 video.muted = true;
                 video.play();
             });
         }
     }
-  }, [activeIndex, isInlineUnmuted, currentSource]);
+  }, [activeIndex, currentSource]); // Re-run when video changes
 
-  // Logic: 1st Click = Unmute/Play Inline. 2nd Click = Open Modal.
+  // --- 2. The Interaction Logic ---
   const handleCardClick = (e: React.MouseEvent) => {
-    e.preventDefault();    // Prevents link navigation/reloads
-    e.stopPropagation();   // Prevents bubbling to parent containers
+    e.preventDefault();
+    e.stopPropagation();
 
-    if (!isInlineUnmuted) {
-        // Step 1: User wants to hear/watch the video in the card
-        setIsInlineUnmuted(true);
+    // PHASE 1: User clicks to hear sound (Inline)
+    if (!isInlineActive) {
+        setIsInlineActive(true);
         if(videoRef.current) {
-            videoRef.current.currentTime = 0; // Optional: Restart video from beginning on unmute
             videoRef.current.muted = false;
+            videoRef.current.currentTime = 0; // Restart for better experience
+            videoRef.current.play();
         }
-    } else {
-        // Step 2: User clicked again, now they want the big screen
+    } 
+    // PHASE 2: User clicks again to open big player (Modal)
+    else {
         setIsOpen(true);
-        setIsInlineUnmuted(false); // Mute the background card so it doesn't overlap audio
+        // We pause/mute the background card so audio doesn't overlap
+        if(videoRef.current) {
+            videoRef.current.muted = true;
+            videoRef.current.pause();
+        }
     }
   };
 
-  const toggleOpen = () => {
-    setIsOpen(!isOpen);
-    // Ensure background card is muted when we close modal
-    if (isOpen) setIsInlineUnmuted(false);
+  const closeModal = (e?: React.MouseEvent) => {
+    if(e) e.stopPropagation();
+    setIsOpen(false);
+    // When closing modal, return card to background loop state
+    setIsInlineActive(false);
+    if(videoRef.current) {
+        videoRef.current.muted = true;
+        videoRef.current.play();
+    }
   };
 
   const navigate = (direction: 'next' | 'prev', e?: React.MouseEvent) => {
-    if (e) {
-        e.stopPropagation();
-        e.preventDefault();
-    }
+    if (e) e.stopPropagation();
+    
+    // Reset inline state when switching videos
+    setIsInlineActive(false);
+    
     if (direction === 'next') {
         setActiveIndex((prev) => (prev + 1) % videoSources.length);
     } else {
         setActiveIndex((prev) => (prev - 1 + videoSources.length) % videoSources.length);
     }
-    // Reset inline mute status when changing videos
-    setIsInlineUnmuted(false);
   };
 
   const embedUrl = getYouTubeEmbedUrl(currentSource.fullUrl);
 
   return (
     <>
-        {/* Main Card */}
+        {/* --- CARD COMPONENT --- */}
         <div 
             onClick={handleCardClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="w-full h-full bg-black relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg select-none"
+            className="w-full h-full bg-black relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg select-none transform transition-transform"
         >
+            {/* The MP4 Preview */}
             <video
-                key={`${id}-preview-${activeIndex}`}
+                key={`${id}-video-${activeIndex}`}
                 ref={videoRef}
                 src={currentSource.previewUrl}
                 className={`w-full h-full object-cover transition-all duration-700 
-                    ${isHovered ? 'scale-100 opacity-90' : 'scale-105 opacity-60'}
-                    ${isInlineUnmuted ? 'opacity-100' : ''}
+                    ${isHovered ? 'scale-100 opacity-100' : 'scale-105 opacity-60'}
+                    ${isInlineActive ? 'opacity-100 scale-100' : ''}
                 `}
                 loop
                 playsInline
                 autoPlay
-                muted={!isInlineUnmuted} // Controlled by React state
+                muted // Initial state handled by ref, but good for SSR
             />
 
-            {/* Hover Overlay - Changes based on state */}
-            <div className={`absolute inset-0 bg-black/40 transition-opacity duration-500 
-                ${isHovered && !isInlineUnmuted ? 'opacity-100' : 'opacity-0'} 
-                flex items-center justify-center z-10 pointer-events-none`}>
-                <div className={`w-16 h-16 rounded-full bg-white flex items-center justify-center transition-transform duration-500 
-                    ${isHovered ? 'scale-100' : 'scale-50'}`}>
-                    <Play className="w-6 h-6 text-black fill-black ml-1" />
+            {/* Overlay: Play Icon (Only shows if NOT playing sound yet) */}
+            {!isInlineActive && (
+                <div className={`absolute inset-0 bg-black/20 transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'} flex items-center justify-center z-10 pointer-events-none`}>
+                    <div className={`w-16 h-16 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-transform duration-500 ${isHovered ? 'scale-100' : 'scale-50'}`}>
+                        <Play className="w-6 h-6 text-white ml-1" />
+                    </div>
                 </div>
-            </div>
-
-            {/* If playing inline, show an "Expand" hint on hover */}
-            {isInlineUnmuted && isHovered && (
-                 <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-                     <div className="bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full flex items-center gap-2 animate-in fade-in zoom-in duration-200">
-                        <Maximize2 className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-widest">Open Fullscreen</span>
-                     </div>
-                 </div>
             )}
 
-            {/* Navigation Dots */}
+            {/* Overlay: Expand Hint (Only shows if ALREADY playing sound) */}
+            {isInlineActive && isHovered && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none animate-in fade-in duration-300">
+                    <div className="bg-black/60 backdrop-blur-md text-white px-5 py-2 rounded-full flex items-center gap-2 border border-white/10 shadow-xl">
+                        <Maximize2 className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Fullscreen</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Navigation Dots (If multiple videos) */}
             {videoSources.length > 1 && (
-                <div className="absolute bottom-6 right-6 z-30 flex gap-2">
+                <div className="absolute bottom-6 right-6 z-30 flex gap-2" onClick={(e) => e.stopPropagation()}>
                     {videoSources.map((_, idx) => (
                         <button
                             key={idx}
                             onClick={(e) => {
                                 e.stopPropagation();
+                                setIsInlineActive(false); // Reset to muted loop on switch
                                 setActiveIndex(idx);
-                                setIsInlineUnmuted(false);
                             }}
                             className={`w-2 h-2 rounded-full transition-all duration-300 shadow-md ${
                                 idx === activeIndex 
@@ -183,63 +181,46 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 </div>
             )}
 
-            {/* Status Indicator (Bottom Left) */}
-            <div className="absolute bottom-6 left-6 text-white flex items-center gap-2 z-20 transition-opacity duration-300">
-                {isInlineUnmuted ? (
-                    <>
-                        <Volume2 className="w-4 h-4 text-rose-500 animate-pulse" />
-                        <span className="text-[9px] font-bold tracking-widest uppercase text-white/90">Sound On</span>
-                    </>
+            {/* Sound Status Indicator */}
+            <div className="absolute bottom-6 left-6 text-white flex items-center gap-2 z-20 pointer-events-none">
+                {isInlineActive ? (
+                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+                        <Volume2 className="w-4 h-4 text-rose-500" />
+                        <span className="text-[10px] font-bold tracking-widest uppercase text-white">Playing</span>
+                    </div>
                 ) : (
-                    <>
-                        <VolumeX className="w-3 h-3 opacity-50" />
-                        <span className="text-[9px] font-bold tracking-widest uppercase opacity-50">Preview Mode</span>
-                    </>
+                    <div className="flex items-center gap-2 opacity-50">
+                        <VolumeX className="w-4 h-4" />
+                        <span className="text-[10px] font-bold tracking-widest uppercase">Preview</span>
+                    </div>
                 )}
             </div>
 
-            {/* Header Info */}
+            {/* Title / Year */}
             <div className="absolute top-6 right-6 z-20 text-right mix-blend-difference pointer-events-none">
                 <span className="block text-white font-display font-bold text-3xl tracking-tight leading-none">{year}</span>
                 <span className="block text-white/70 font-english text-[10px] tracking-widest uppercase">{title}</span>
             </div>
         </div>
 
-        {/* Modal Portal */}
+        {/* --- MODAL COMPONENT (YouTube / Full View) --- */}
         {isOpen && createPortal(
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-2xl animate-[fadeIn_0.4s_ease-out]">
-                {/* Backdrop Click Closes */}
-                <div className="absolute inset-0" onClick={toggleOpen}></div>
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
+                {/* Backdrop Click */}
+                <div className="absolute inset-0" onClick={closeModal}></div>
                 
-                {/* Close Button */}
                 <button 
-                    onClick={toggleOpen} 
-                    className="absolute top-8 right-8 md:right-auto md:left-8 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all z-[110] group border border-white/10"
+                    onClick={closeModal} 
+                    className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all z-[110] border border-white/10"
                 >
-                    <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+                    <X className="w-6 h-6" />
                 </button>
 
-                {/* Modal Navigation Arrows */}
-                {videoSources.length > 1 && (
-                    <>
-                        <button 
-                            onClick={(e) => navigate('prev', e)}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-[110] p-4 bg-white/5 hover:bg-white/10 rounded-full text-white border border-white/5 backdrop-blur-md transition-all group hidden md:flex"
-                        >
-                            <ChevronLeft className="w-8 h-8 group-hover:-translate-x-1 transition-transform" />
-                        </button>
-                        <button 
-                            onClick={(e) => navigate('next', e)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 z-[110] p-4 bg-white/5 hover:bg-white/10 rounded-full text-white border border-white/5 backdrop-blur-md transition-all group hidden md:flex"
-                        >
-                            <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                    </>
-                )}
-
-                {/* Modal Content */}
-                <div className="relative w-[95vw] md:w-[85vw] h-[65vh] md:h-[85vh] max-w-[1600px] bg-black rounded-3xl shadow-2xl overflow-hidden border border-white/10 flex flex-col z-20">
-                    <div className="flex-grow relative bg-black">
+                {/* Main Modal Container */}
+                <div className="relative w-full h-full md:w-[90vw] md:h-[90vh] max-w-[1600px] bg-black md:rounded-3xl shadow-2xl overflow-hidden border border-white/10 flex flex-col z-20">
+                    
+                    {/* Video Area */}
+                    <div className="flex-grow relative bg-black flex items-center justify-center">
                         {embedUrl ? (
                              <iframe
                                 key={`modal-frame-${activeIndex}`}
@@ -249,60 +230,45 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                                 title={title}
                             />
                         ) : (
+                            // Fallback if fullUrl is actually a direct file and not YouTube
                              <video 
-                                key={`modal-video-${activeIndex}`}
-                                src={currentSource.fullUrl || currentSource.previewUrl} 
+                                src={currentSource.fullUrl} 
                                 controls 
                                 autoPlay 
                                 className="w-full h-full object-contain"
                              />
                         )}
+                        
+                        {/* Modal Navigation Arrows */}
+                        {videoSources.length > 1 && (
+                            <>
+                                <button onClick={(e) => navigate('prev', e)} className="absolute left-4 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all">
+                                    <ChevronLeft className="w-10 h-10" />
+                                </button>
+                                <button onClick={(e) => navigate('next', e)} className="absolute right-4 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all">
+                                    <ChevronRight className="w-10 h-10" />
+                                </button>
+                            </>
+                        )}
                     </div>
 
-                    {/* Bottom Toolbar */}
-                    <div className="h-20 bg-zinc-900/80 backdrop-blur-xl border-t border-zinc-800 flex items-center justify-between px-8 shrink-0">
-                        <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-3">
-                                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                                <span className="text-white text-xs font-bold uppercase tracking-widest">{title}</span>
-                                <span className="text-zinc-600 text-xs tracking-widest">| {year}</span>
-                            </div>
-                            
-                            {/* Mobile dots inside modal */}
-                            {videoSources.length > 1 && (
-                                <div className="flex gap-2 mt-1">
-                                    {videoSources.map((_, idx) => (
-                                        <div 
-                                            key={idx}
-                                            className={`h-1 transition-all duration-300 rounded-full ${idx === activeIndex ? 'w-6 bg-rose-500' : 'w-2 bg-zinc-700'}`}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                    {/* Modal Footer Bar */}
+                    <div className="h-16 bg-zinc-900 border-t border-zinc-800 flex items-center justify-between px-6 shrink-0">
+                         <div className="flex flex-col">
+                            <h3 className="text-white font-bold text-sm uppercase tracking-widest">{title}</h3>
+                            <span className="text-zinc-500 text-xs">{activeIndex + 1} / {videoSources.length}</span>
+                         </div>
 
-                        <div className="flex items-center gap-6">
-                            {videoSources.length > 1 && (
-                                <div className="hidden md:flex items-center gap-2 bg-white/5 p-1 rounded-full border border-white/5">
-                                     <button onClick={(e) => navigate('prev', e)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><ChevronLeft className="w-4 h-4 text-white" /></button>
-                                     <span className="text-[10px] text-zinc-400 font-mono px-2">{activeIndex + 1} / {videoSources.length}</span>
-                                     <button onClick={(e) => navigate('next', e)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><ChevronRight className="w-4 h-4 text-white" /></button>
-                                </div>
-                            )}
-                            <a href={currentSource.fullUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-white hover:text-rose-400 transition-colors text-[10px] font-bold uppercase tracking-widest">
-                                <Monitor className="w-4 h-4" />
-                                <span className="hidden sm:inline">Source</span>
-                                <ExternalLink className="w-3 h-3" />
-                            </a>
-                        </div>
+                         <a href={currentSource.fullUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">
+                            <Monitor className="w-4 h-4" />
+                            <span className="hidden sm:inline">Open Source</span>
+                            <ExternalLink className="w-3 h-3" />
+                         </a>
                     </div>
                 </div>
             </div>,
             document.body
         )}
-        <style>{`
-            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        `}</style>
     </>
   );
 };
