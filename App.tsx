@@ -132,10 +132,10 @@ const App: React.FC = () => {
                     id="showreel"
                     year="2025"
                     title="Showreel"
-                    // Use the single URL props for the showreel
+                    // Standard single video props
                     previewVideoUrl="https://assets.mixkit.co/videos/preview/mixkit-abstract-texture-of-black-and-white-lines-and-dots-33479-large.mp4"
-                    fullVideoEmbedUrl="https://www.youtube.com/embed/mkjYn2cRhrI"
-                    fullVideoDirectUrl="https://youtube.com/shorts/mkjYn2cRhrI"
+                    fullVideoEmbedUrl="#"
+                    fullVideoDirectUrl="#"
                  />
     },
     {
@@ -148,28 +148,30 @@ const App: React.FC = () => {
                     id="surreal"
                     year="2025"
                     title="Surrealness"
-                    // Here we use the NEW prop for the 4 videos you requested
+                    // New multi-video prop. 
+                    // IMPORTANT: Replace the INSERT_ strings below with your actual URLs.
                     videoSources={[
                       {
-                        previewUrl: "https://youtube.com/shorts/Re2V2zprjNo"
-                        fullEmbedUrl: "https://www.youtube.com/embed/Re2V2zprjNo
-                        fullDirectUrl: "https://youtube.com/shorts/Re2V2zprjNo"
-                      },
-                      {                        previewUrl: "https://youtube.com/shorts/a0RhwpbhnCA"
-                        fullEmbedUrl: "https://www.youtube.com/embed/a0RhwpbhnCA""
-                        fullDirectUrl: "https://youtube.com/shorts/a0RhwpbhnCA"
+                        previewUrl: "INSERT_VIDEO_1_PREVIEW_URL.mp4",
+                        fullEmbedUrl: "INSERT_VIDEO_1_EMBED_URL",
+                        fullDirectUrl: "INSERT_VIDEO_1_DIRECT_URL"
                       },
                       {
-                        previewUrl: "https://youtu.be/3K25zquwnUE"
-                        fullEmbedUrl: "https://www.youtube.com/embed/3K25zquwnUE"
-                        fullDirectUrl: "https://youtu.be/3K25zquwnUE"
+                        previewUrl: "INSERT_VIDEO_2_PREVIEW_URL.mp4",
+                        fullEmbedUrl: "INSERT_VIDEO_2_EMBED_URL",
+                        fullDirectUrl: "INSERT_VIDEO_2_DIRECT_URL"
                       },
                       {
-                        previewUrl: "https://youtu.be/h9MQ6L4H72Q"
-                        fullEmbedUrl: "https://www.youtube.com/embed/mkjYn2cNhr,"
-                        fullDirectUrl: "https://youtu.be/h9MQ6L4H72Q"
+                        previewUrl: "INSERT_VIDEO_3_PREVIEW_URL.mp4",
+                        fullEmbedUrl: "INSERT_VIDEO_3_EMBED_URL",
+                        fullDirectUrl: "INSERT_VIDEO_3_DIRECT_URL"
+                      },
+                      {
+                        previewUrl: "INSERT_VIDEO_4_PREVIEW_URL.mp4",
+                        fullEmbedUrl: "INSERT_VIDEO_4_EMBED_URL",
+                        fullDirectUrl: "INSERT_VIDEO_4_DIRECT_URL"
                       }
-                    ]}ht
+                    ]}
                  />
     },
     {
