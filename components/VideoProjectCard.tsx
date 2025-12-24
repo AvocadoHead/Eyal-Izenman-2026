@@ -25,6 +25,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+    const [isCardPlaying, setIsCardPlaying] = useState(false);
   const currentSource = videoSources[activeIndex];
 
   // Helper to extract YouTube ID and create embed URL
@@ -66,8 +67,20 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
     }
   }, [activeIndex, isHovered]);
 
-  const toggleOpen = () => setIsOpen(!isOpen);
-
+  const handleCardClick = () => {
+    if (isCardPlaying) {
+      // Already playing, open the modal
+      setIsOpen(true);
+    } else {
+      // First click: play the video in the card
+      const video = videoRef.current;
+      if (video) {
+        video.muted = false;
+        video.play();
+        setIsCardPlaying(true);
+      }
+    }
+  };
   const navigate = (direction: 'next' | 'prev', e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (direction === 'next') {
@@ -82,7 +95,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   return (
     <>
         <div 
-            onClick={toggleOpen}
+            onClick={handleCardClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             className="w-full h-full bg-black relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg"
