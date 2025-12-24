@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2 } from 'lucide-react';
+import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2, Play } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 export interface VideoSource {
@@ -25,25 +25,25 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   
   const currentSource = videoSources[activeIndex];
 
-  // Robust ID Extractor
+  // 1. Reliable ID Extractor
   const getYouTubeId = (url: string) => {
     if (!url) return null;
-    const regExp = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[1].length === 11) ? match[1] : null;
+    const match = url.match(/[?&]v=([^&]+)/) || url.match(/(?:youtu\.be\/|embed\/|shorts\/)([^?]+)/);
+    return (match && match[1]) ? match[1] : null;
   };
 
-  // Simplified Embed: Autoplay, Muted, No Loop (Stability priority)
-  const getPreviewEmbed = (url: string) => {
+  // 2. Simplified Embed URL (No Loop = No Error)
+  const getEmbedUrl = (url: string, isPreview: boolean) => {
     const id = getYouTubeId(url);
     if (!id) return null;
-    return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&fs=0&playsinline=1`;
-  };
 
-  const getFullEmbed = (url: string) => {
-    const id = getYouTubeId(url);
-    if (!id) return null;
-    return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&controls=1&rel=0&showinfo=0&iv_load_policy=3&playsinline=1`;
+    if (isPreview) {
+        // Preview: Autoplay, Muted, No Controls, No Loop (Prevents error)
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&fs=0`;
+    } else {
+        // Modal: Autoplay, Sound ON, Controls enabled
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&controls=1&rel=0`;
+    }
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -57,14 +57,13 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
     setIsOpen(false);
   };
 
-  const nextVideo = (e: React.MouseEvent) => {
+  const navigate = (direction: 'next' | 'prev', e: React.MouseEvent) => {
     e.stopPropagation();
-    setActiveIndex((prev) => (prev + 1) % videoSources.length);
-  };
-
-  const prevVideo = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setActiveIndex((prev) => (prev - 1 + videoSources.length) % videoSources.length);
+    if (direction === 'next') {
+        setActiveIndex((prev) => (prev + 1) % videoSources.length);
+    } else {
+        setActiveIndex((prev) => (prev - 1 + videoSources.length) % videoSources.length);
+    }
   };
 
   return (
@@ -75,11 +74,11 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
             onMouseLeave={() => setIsHovered(false)}
             className="w-full h-full bg-zinc-900 relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg"
         >
-            {/* PREVIEW IFRAME (Pointer events none ensures click hits the card, not the video) */}
+            {/* PREVIEW VIDEO */}
             <div className="absolute inset-0 w-full h-full pointer-events-none scale-[1.35]"> 
                 <iframe
                     key={`preview-${activeIndex}`}
-                    src={getPreviewEmbed(currentSource.previewUrl) || ''}
+                    src={getEmbedUrl(currentSource.previewUrl, true) || ''}
                     className="w-full h-full object-cover"
                     allow="autoplay; encrypted-media"
                     tabIndex={-1}
@@ -87,28 +86,35 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 />
             </div>
 
-            {/* OVERLAYS */}
-            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none z-10"></div>
+            {/* CLICKABLE OVERLAY */}
+            <div className="absolute inset-0 z-10 bg-transparent"></div>
 
-            <div className={`absolute inset-0 flex items-center justify-center z-20 pointer-events-none transition-all duration-300 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+            {/* HOVER OVERLAY */}
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none z-20"></div>
+
+            {/* CENTER BUTTON */}
+            <div className={`absolute inset-0 flex items-center justify-center z-30 pointer-events-none transition-all duration-300 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                 <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2 rounded-full flex items-center gap-2 shadow-2xl">
                     <Maximize2 className="w-4 h-4" />
                     <span className="font-bold tracking-widest text-xs uppercase">Expand</span>
                 </div>
             </div>
 
-            <div className="absolute bottom-6 left-6 z-20 flex items-center gap-2 text-white/60 pointer-events-none">
+            {/* BOTTOM STATUS */}
+            <div className="absolute bottom-6 left-6 z-30 flex items-center gap-2 text-white/60 pointer-events-none">
                 <VolumeX className="w-4 h-4" />
                 <span className="text-[10px] font-bold tracking-widest uppercase">Muted Preview</span>
             </div>
 
-            <div className="absolute top-6 right-6 z-20 text-right mix-blend-difference pointer-events-none">
+            {/* HEADER INFO */}
+            <div className="absolute top-6 right-6 z-30 text-right mix-blend-difference pointer-events-none">
                 <span className="block text-white font-display font-bold text-3xl tracking-tight leading-none">{year}</span>
                 <span className="block text-white/70 font-english text-[10px] tracking-widest uppercase">{title}</span>
             </div>
 
+            {/* DOTS NAVIGATION */}
             {videoSources.length > 1 && (
-                <div className="absolute bottom-6 right-6 z-30 flex gap-2">
+                <div className="absolute bottom-6 right-6 z-40 flex gap-2">
                     {videoSources.map((_, idx) => (
                         <button
                             key={idx}
@@ -134,7 +140,7 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 <div className="relative w-[95vw] md:w-[85vw] h-[60vh] md:h-[85vh] max-w-[1600px] bg-black rounded-3xl border border-white/10 flex flex-col z-20 overflow-hidden shadow-2xl">
                     <div className="flex-grow relative bg-black flex items-center justify-center">
                         <iframe 
-                            src={getFullEmbed(currentSource.fullUrl) || ''}
+                            src={getEmbedUrl(currentSource.fullUrl, false) || ''}
                             className="w-full h-full absolute inset-0" 
                             allow="autoplay; fullscreen; picture-in-picture" 
                             title={title} 
@@ -142,10 +148,10 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                         
                         {videoSources.length > 1 && (
                             <>
-                                <button onClick={prevVideo} className="absolute -left-16 md:left-4 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all group">
+                                <button onClick={(e) => navigate('prev', e)} className="absolute -left-16 md:left-4 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all group">
                                     <ChevronLeft className="w-10 h-10 group-hover:-translate-x-1 transition-transform" />
                                 </button>
-                                <button onClick={nextVideo} className="absolute -right-16 md:right-4 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all group">
+                                <button onClick={(e) => navigate('next', e)} className="absolute -right-16 md:right-4 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all group">
                                     <ChevronRight className="w-10 h-10 group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </>
