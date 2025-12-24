@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2, Play } from 'lucide-react';
+import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 export interface VideoSource {
@@ -25,7 +25,6 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
   
   const currentSource = videoSources[activeIndex];
 
-  // --- 1. Extract YouTube ID Safely ---
   const getYouTubeId = (url: string) => {
     if (!url) return null;
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([^?&"'>]+)/);
@@ -34,16 +33,11 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
 
   const videoId = getYouTubeId(currentSource.previewUrl);
 
-  // --- 2. Build Standard Embed URL ---
   const getEmbedUrl = (id: string | null, isPreview: boolean) => {
     if (!id) return '';
-    
-    // Preview: Autoplay + Mute + No Controls + No Loop (Prevents error)
     if (isPreview) {
         return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&playsinline=1&showinfo=0&rel=0&iv_load_policy=3`;
-    } 
-    // Modal: Autoplay + Sound + Controls
-    else {
+    } else {
         return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&controls=1&playsinline=1&rel=0&iv_load_policy=3`;
     }
   };
@@ -78,7 +72,6 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
             onMouseLeave={() => setIsHovered(false)}
             className="w-full h-full bg-zinc-900 relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg"
         >
-            {/* THUMBNAIL BACKUP (Prevents black screen while loading) */}
             {thumbnailUrl && (
                 <div 
                     className="absolute inset-0 bg-cover bg-center z-0 scale-105"
@@ -86,7 +79,6 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 />
             )}
 
-            {/* PREVIEW VIDEO */}
             <div className="absolute inset-0 w-full h-full pointer-events-none scale-[1.35] z-10 transition-opacity duration-500"> 
                 {videoId && (
                     <iframe
@@ -100,7 +92,6 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
                 )}
             </div>
 
-            {/* OVERLAYS */}
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 pointer-events-none z-20"></div>
 
             <div className={`absolute inset-0 flex items-center justify-center z-30 pointer-events-none transition-all duration-300 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
@@ -135,7 +126,6 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
             )}
         </div>
 
-        {/* MODAL */}
         {isOpen && createPortal(
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-[fadeIn_0.3s_ease-out]">
                 <div className="absolute inset-0" onClick={handleModalClose}></div>
