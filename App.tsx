@@ -151,23 +151,23 @@ const App: React.FC = () => {
                     // Here we use the NEW prop for the 4 videos you requested
                     videoSources={[
                       {
-                        previewUrl: https://youtube.com/shorts/Re2V2zprjNo
-                        fullEmbedUrl: https://www.youtube.com/embed/Re2V2zprjNo
-                        fullDirectUrl: https://youtube.com/shorts/Re2V2zprjNo
+                        previewUrl: "https://youtube.com/shorts/Re2V2zprjNo"
+                        fullEmbedUrl: "https://www.youtube.com/embed/Re2V2zprjNo
+                        fullDirectUrl: "https://youtube.com/shorts/Re2V2zprjNo"
                       },
-                      {                        previewUrl: https://youtube.com/shorts/a0RhwpbhnCA
-                        fullEmbedUrl: https://www.youtube.com/embed/a0RhwpbhnCA
-                        fullDirectUrl: https://youtube.com/shorts/a0RhwpbhnCA
-                      },
-                      {
-                        previewUrl: https://youtu.be/3K25zquwnUE
-                        fullEmbedUrl: https://www.youtube.com/embed/3K25zquwnUE
-                        fullDirectUrl: https://youtu.be/3K25zquwnUE
+                      {                        previewUrl: "https://youtube.com/shorts/a0RhwpbhnCA"
+                        fullEmbedUrl: "https://www.youtube.com/embed/a0RhwpbhnCA""
+                        fullDirectUrl: "https://youtube.com/shorts/a0RhwpbhnCA"
                       },
                       {
-                        previewUrl: "https://youtu.be/h9MQ6L4H72Q
-                        fullEmbedUrl: "https://www.youtube.com/embed/mkjYn2cNhr,
-                        fullDirectUrl: "https://youtu.be/h9MQ6L4H72Q
+                        previewUrl: "https://youtu.be/3K25zquwnUE"
+                        fullEmbedUrl: "https://www.youtube.com/embed/3K25zquwnUE"
+                        fullDirectUrl: "https://youtu.be/3K25zquwnUE"
+                      },
+                      {
+                        previewUrl: "https://youtu.be/h9MQ6L4H72Q"
+                        fullEmbedUrl: "https://www.youtube.com/embed/mkjYn2cNhr,"
+                        fullDirectUrl: "https://youtu.be/h9MQ6L4H72Q"
                       }
                     ]}ht
                  />
