@@ -121,6 +121,7 @@ const App: React.FC = () => {
     }
   ];
 
+  // 🔴 THESE ARE YOUR SPECIFIC VIDEOS
   const currentProjects: Project[] = [
     {
       id: 'showreel',
