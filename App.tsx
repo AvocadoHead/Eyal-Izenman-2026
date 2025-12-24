@@ -95,30 +95,9 @@ const App: React.FC = () => {
   };
 
   const currentCourses: Course[] = [
-    {
-      id: 'marketing',
-      title: t.courses.marketing.title,
-      subtitle: t.courses.marketing.subtitle,
-      description: t.courses.marketing.desc,
-      color: 'bg-indigo-600',
-      content: null
-    },
-    {
-      id: 'video-editing',
-      title: t.courses.editing.title,
-      subtitle: t.courses.editing.subtitle,
-      description: t.courses.editing.desc,
-      color: 'bg-rose-500',
-      content: null
-    },
-    {
-      id: 'gen-ai',
-      title: t.courses.genai.title,
-      subtitle: t.courses.genai.subtitle,
-      description: t.courses.genai.desc,
-      color: 'bg-emerald-600',
-      content: null
-    }
+    { id: 'marketing', title: t.courses.marketing.title, subtitle: t.courses.marketing.subtitle, description: t.courses.marketing.desc, color: 'bg-indigo-600', content: null },
+    { id: 'video-editing', title: t.courses.editing.title, subtitle: t.courses.editing.subtitle, description: t.courses.editing.desc, color: 'bg-rose-500', content: null },
+    { id: 'gen-ai', title: t.courses.genai.title, subtitle: t.courses.genai.subtitle, description: t.courses.genai.desc, color: 'bg-emerald-600', content: null }
   ];
 
   const currentProjects: Project[] = [
@@ -134,10 +113,8 @@ const App: React.FC = () => {
                     title="Showreel"
                     videoSources={[
                       {
-                        // ⚠️ YOUR LINKS WERE BROKEN (404). I replaced them with a test video.
-                        // REPLACE these URLs with your valid Cloudinary link when ready.
-                        previewUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                        fullUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342621/Showreel_2025_c4zc2i.mp4",
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342621/Showreel_2025_c4zc2i.mp4"
                       }
                     ]}
                  />
@@ -154,41 +131,27 @@ const App: React.FC = () => {
                     title="Surrealness"
                     videoSources={[
                       {
-                        // ⚠️ YOUR LINKS WERE BROKEN (404). I replaced them with test videos.
-                        previewUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                        fullUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342629/Surrealness_2_q3h7lw.mp4",
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342629/Surrealness_2_q3h7lw.mp4"
                       },
                       {
-                        previewUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                        fullUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342626/Surrealness_1_z6c5qa.mp4",
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342626/Surrealness_1_z6c5qa.mp4"
+                      },
+                      {
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342625/Surrealness_4_z1sz3e.mp4",
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342625/Surrealness_4_z1sz3e.mp4"
+                      },
+                      {
+                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342622/Surrealness_3_xhyw1p.mp4",
+                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1717342622/Surrealness_3_xhyw1p.mp4"
                       }
                     ]}
                  />
     },
-    {
-      id: 'ai-index',
-      title: t.projects.aiIndex.title,
-      description: t.projects.aiIndex.desc,
-      link: 'https://avocadohead.github.io/AI-Index/',
-      type: 'interactive',
-      component: <SitePreview url="https://avocadohead.github.io/AI-Index/" />
-    },
-    {
-      id: 'optopia',
-      title: t.projects.optopia.title,
-      description: t.projects.optopia.desc,
-      link: 'https://optopia-collective-hub.vercel.app/',
-      type: 'community',
-      component: <SitePreview url="https://optopia-collective-hub.vercel.app/" />
-    },
-    {
-      id: 'aether',
-      title: t.projects.aether.title,
-      description: t.projects.aether.desc,
-      link: 'https://gallery3-d.vercel.app/',
-      type: 'gallery',
-      component: <SitePreview url="https://gallery3-d.vercel.app/" />
-    }
+    { id: 'ai-index', title: t.projects.aiIndex.title, description: t.projects.aiIndex.desc, link: 'https://avocadohead.github.io/AI-Index/', type: 'interactive', component: <SitePreview url="https://avocadohead.github.io/AI-Index/" /> },
+    { id: 'optopia', title: t.projects.optopia.title, description: t.projects.optopia.desc, link: 'https://optopia-collective-hub.vercel.app/', type: 'community', component: <SitePreview url="https://optopia-collective-hub.vercel.app/" /> },
+    { id: 'aether', title: t.projects.aether.title, description: t.projects.aether.desc, link: 'https://gallery3-d.vercel.app/', type: 'gallery', component: <SitePreview url="https://gallery3-d.vercel.app/" /> }
   ];
 
   useEffect(() => {
@@ -202,7 +165,6 @@ const App: React.FC = () => {
             setSelectedCourse(null);
         }
     };
-
     handleUrlChange();
     window.addEventListener('popstate', handleUrlChange);
     return () => window.removeEventListener('popstate', handleUrlChange);
@@ -236,21 +198,16 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 relative font-sans selection:bg-rose-200 overflow-x-hidden" dir="ltr">
-      <div className="fixed inset-0 pointer-events-none opacity-[0.04] z-0" 
-           style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}>
-      </div>
-
+      <div className="fixed inset-0 pointer-events-none opacity-[0.04] z-0" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
       <button onClick={toggleLanguage} className="fixed top-6 right-6 md:right-auto md:left-6 z-50 bg-white/50 hover:bg-white backdrop-blur-sm border border-slate-200 p-2 rounded-full shadow-sm transition-all group flex items-center gap-2">
         <Globe className="w-5 h-5 text-slate-600" />
         <span className="text-[10px] font-bold font-english uppercase tracking-widest text-slate-500 w-0 overflow-hidden group-hover:w-auto group-hover:px-1 transition-all duration-300">
             {lang === 'he' ? 'EN' : 'HE'}
         </span>
       </button>
-
       <a href="https://wa.me/97236030603" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-110 transition-all flex items-center justify-center">
         <MessageCircle className="w-6 h-6 fill-current" />
       </a>
-
       <main className="relative z-10" ref={containerRef}>
         <section className="pt-32 pb-40 px-6 md:px-12 flex flex-col md:flex-row items-center md:items-start justify-center gap-8 md:gap-16 relative z-20">
             <div className="relative group shrink-0">
@@ -271,9 +228,7 @@ const App: React.FC = () => {
                 <p className="mt-6 max-w-lg text-slate-600 leading-relaxed font-light text-xl">{t.bio}</p>
             </div>
         </section>
-
         <NarrativeLine scrollProgress={scrollProgress} />
-
         <section className="max-w-7xl mx-auto px-6 pb-48 pt-0 relative">
             <div className="flex flex-col w-full gap-56">
                 {currentProjects.map((project, index) => (
@@ -281,7 +236,6 @@ const App: React.FC = () => {
                 ))}
             </div>
         </section>
-
         <section className="relative pt-32 pb-32">
              <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-[#f8fafc] via-white to-transparent z-10"></div>
              <div className="text-center mb-24 relative z-20" dir={textDir}>
@@ -290,7 +244,6 @@ const App: React.FC = () => {
              </div>
              <CourseSection courses={currentCourses} onSelectCourse={handleCourseSelect} textDir={textDir} currentLang={lang} onToggleLang={toggleLanguage} />
         </section>
-
         <footer className="py-20 bg-slate-900 text-slate-400 text-sm border-t border-slate-800">
             <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6" dir="ltr">
                 <p className="font-english opacity-60">&copy; {new Date().getFullYear()} {t.footerRights} Eyal Izenman.</p>
@@ -302,7 +255,6 @@ const App: React.FC = () => {
             </div>
         </footer>
       </main>
-
       <CourseModal course={selectedCourse} onClose={handleCourseClose} textDir={textDir} currentLang={lang} onToggleLang={toggleLanguage} />
     </div>
   );
