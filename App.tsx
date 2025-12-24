@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Project, Course } from './types';
 import { ProjectCard } from './components/ProjectCard';
@@ -24,7 +23,7 @@ const CONTENT = {
     contact: 'צור קשר',
     projects: {
         showreel: { title: 'Showreel 2025', desc: 'Motion & Visual Effects. מסע ויזואלי בין פרויקטים נבחרים.' },
-        surreal: { title: 'Surreal Dreams', desc: 'מחקר ויזואלי בתנועה וחלום. יצירה אבסטרקטית הבוחנת את הגבול בין המציאותי למחולל.' },
+        surreal: { title: 'Surrealness', desc: 'מחקר ויזואלי בתנועה וחלום. יצירה אבסטרקטית הבוחנת את הגבול בין המציאותי למחולל.' },
         aiIndex: { title: 'AI Index', desc: 'אינדקס כלי בינה מלאכותית. מאגר חי ונושם של הכלים הכי חדשים בתעשייה.' },
         optopia: { title: 'Optopia Collective', desc: 'קהילת אמנות גנרטיבית. המקום שבו יוצרים נפגשים כדי לחקור, לשתף וליצור ביחד.' },
         aether: { title: 'Aether Gallery', desc: 'גלריה במרחב תלת-ממדי. חווית צפייה אימרסיבית בעבודות נבחרות.' }
@@ -57,7 +56,7 @@ const CONTENT = {
     contact: 'Contact',
     projects: {
         showreel: { title: 'Showreel 2025', desc: 'Motion & Visual Effects. A visual journey through selected works.' },
-        surreal: { title: 'Surreal Dreams', desc: 'Visual research in motion and dreams. An abstract piece exploring the boundary between real and generated.' },
+        surreal: { title: 'Surrealness', desc: 'Visual research in motion and dreams. An abstract piece exploring the boundary between real and generated.' },
         aiIndex: { title: 'AI Index', desc: 'Curated AI Tools Index. A living database of the newest industry tools.' },
         optopia: { title: 'Optopia Collective', desc: 'Generative Art Community. Where creators meet to explore, share, and build together.' },
         aether: { title: 'Aether Gallery', desc: '3D Spatial Gallery. Immersive viewing experience of selected artworks.' }
@@ -133,9 +132,10 @@ const App: React.FC = () => {
                     id="showreel"
                     year="2025"
                     title="Showreel"
+                    // Use the single URL props for the showreel
                     previewVideoUrl="https://assets.mixkit.co/videos/preview/mixkit-abstract-texture-of-black-and-white-lines-and-dots-33479-large.mp4"
-                    fullVideoEmbedUrl="https://www.youtube.com/embed/mkjYn2cRhrI"
-                    fullVideoDirectUrl="https://youtube.com/shorts/mkjYn2cRhrI"
+                    fullVideoEmbedUrl="#"
+                    fullVideoDirectUrl="#"
                  />
     },
     {
@@ -146,11 +146,31 @@ const App: React.FC = () => {
       type: 'video',
       component: <VideoProjectCard 
                     id="surreal"
-                    year="2024"
-                    title="Dreams"
-                    previewVideoUrl="https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-286-large.mp4"
-                    fullVideoEmbedUrl="hhttps://www.youtube.com/embed/A_z71zIAXpU"
-                    fullVideoDirectUrl="https://youtube.com/shorts/A_z71zIAXpU
+                    year="2025"
+                    title="Surrealness"
+                    // Here we use the NEW prop for the 4 videos you requested
+                    videoSources={[
+                      {
+                        previewUrl: "INSERT_YOUR_URL_1_HERE.mp4",
+                        fullEmbedUrl: "INSERT_IFRAME_URL_1_HERE",
+                        fullDirectUrl: "INSERT_DIRECT_LINK_1_HERE"
+                      },
+                      {
+                        previewUrl: "INSERT_YOUR_URL_2_HERE.mp4",
+                        fullEmbedUrl: "INSERT_IFRAME_URL_2_HERE",
+                        fullDirectUrl: "INSERT_DIRECT_LINK_2_HERE"
+                      },
+                      {
+                        previewUrl: "INSERT_YOUR_URL_3_HERE.mp4",
+                        fullEmbedUrl: "INSERT_IFRAME_URL_3_HERE",
+                        fullDirectUrl: "INSERT_DIRECT_LINK_3_HERE"
+                      },
+                      {
+                        previewUrl: "INSERT_YOUR_URL_4_HERE.mp4",
+                        fullEmbedUrl: "INSERT_IFRAME_URL_4_HERE",
+                        fullDirectUrl: "INSERT_DIRECT_LINK_4_HERE"
+                      }
+                    ]}
                  />
     },
     {
@@ -179,7 +199,6 @@ const App: React.FC = () => {
     }
   ];
 
-  // Logic to handle URL parameters for deep-linking (v2: Handles GH Pages subdirs)
   useEffect(() => {
     const handleUrlChange = () => {
         const params = new URLSearchParams(window.location.search);
@@ -201,7 +220,6 @@ const App: React.FC = () => {
       setSelectedCourse(course);
       const url = new URL(window.location.href);
       url.searchParams.set('course', course.id);
-      // We use only the pathname and the new search to avoid full domain issues
       window.history.pushState({}, '', window.location.pathname + url.search);
   };
 
