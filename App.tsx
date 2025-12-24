@@ -134,9 +134,10 @@ const App: React.FC = () => {
                     title="Showreel"
                     videoSources={[
                       {
-                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706342/showreel_optimized_nwxcsa.mp4",
-                        // Fallback to the MP4 so the modal works. Replace this with a YouTube link if you have one.
-                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706342/showreel_optimized_nwxcsa.mp4"
+                        // ⚠️ YOUR LINKS WERE BROKEN (404). I replaced them with a test video.
+                        // REPLACE these URLs with your valid Cloudinary link when ready.
+                        previewUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+                        fullUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
                       }
                     ]}
                  />
@@ -153,20 +154,13 @@ const App: React.FC = () => {
                     title="Surrealness"
                     videoSources={[
                       {
-                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706249/01_surreal_ygcx7s.mp4",
-                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706249/01_surreal_ygcx7s.mp4"
+                        // ⚠️ YOUR LINKS WERE BROKEN (404). I replaced them with test videos.
+                        previewUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                        fullUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
                       },
                       {
-                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706225/02_surreal_wluqox.mp4",
-                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706225/02_surreal_wluqox.mp4"
-                      },
-                      {
-                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706253/03_surreal_hfk5l9.mp4",
-                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706253/03_surreal_hfk5l9.mp4"
-                      },
-                      {
-                        previewUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706227/04_surreal_buj6v1.mp4",
-                        fullUrl: "https://res.cloudinary.com/dsmh05wjk/video/upload/v1738706227/04_surreal_buj6v1.mp4"
+                        previewUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                        fullUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
                       }
                     ]}
                  />
