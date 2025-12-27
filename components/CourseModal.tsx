@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { X, ChevronDown, ArrowRight, Target, Activity, Share2, MousePointer2, Music, Scissors, Sparkles, Globe, BrainCircuit, Zap, Layers } from 'lucide-react';
+import { X, ChevronDown, ArrowRight, Target, Activity, Share2, Music, Scissors, Sparkles, Globe, BrainCircuit, Zap, Layers } from 'lucide-react';
 
-// --- TYPES (If not imported from elsewhere) ---
+// --- TYPES ---
 export interface Course {
   id: string;
   title: string;
   description: string;
-  // Add other props as needed by your parent component
 }
 
 interface CourseModalProps {
@@ -16,140 +15,223 @@ interface CourseModalProps {
   onToggleLang: () => void;
 }
 
-// --- CONTEXT ANIMATIONS (The "WOW" Elements) ---
+// --- ENHANCED INTERACTIVE 3D WORD CLOUD (Fixed & Complete) ---
+const InteractiveWordCloud: React.FC<{ words: string[], color: string }> = ({ words, color }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rotationXRef = useRef(0);
+  const rotationYRef = useRef(0);
+  const momentumXRef = useRef(0);
+  const momentumYRef = useRef(0);
+  const isDraggingRef = useRef(false);
+  const lastMouseRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let particles: any[] = [];
+    let animationId: number;
+
+    const init = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
+      ctx.scale(dpr, dpr);
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const radius = Math.min(canvas.offsetWidth, canvas.offsetHeight) * 0.35;
+      const displayWords = [...words, ...words, ...words].slice(0, 30);
+      
+      particles = displayWords.map((word) => {
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(Math.random() * 2 - 1);
+        return {
+          word,
+          x: radius * Math.sin(phi) * Math.cos(theta),
+          y: radius * Math.sin(phi) * Math.sin(theta),
+          z: radius * Math.cos(phi)
+        };
+      });
+    };
+
+    const rotatePoint = (x: number, y: number, z: number) => {
+      const cosY = Math.cos(rotationYRef.current);
+      const sinY = Math.sin(rotationYRef.current);
+      const tempX = x * cosY - z * sinY;
+      const tempZ = z * cosY + x * sinY;
+      
+      const cosX = Math.cos(rotationXRef.current);
+      const sinX = Math.sin(rotationXRef.current);
+      const tempY = y * cosX - tempZ * sinX;
+      const finalZ = tempZ * cosX + y * sinX;
+      
+      return { x: tempX, y: tempY, z: finalZ };
+    };
+
+    const draw = () => {
+      const width = canvas.offsetWidth;
+      const height = canvas.offsetHeight;
+      ctx.clearRect(0, 0, width, height);
+
+      // Apply momentum
+      if (!isDraggingRef.current) {
+        rotationYRef.current += momentumYRef.current;
+        rotationXRef.current += momentumXRef.current;
+        momentumXRef.current *= 0.95;
+        momentumYRef.current *= 0.95;
+        
+        // Base rotation
+        rotationYRef.current += 0.001;
+        rotationXRef.current += 0.0005;
+      }
+
+      const sorted = particles
+        .map(p => {
+          const rotated = rotatePoint(p.x, p.y, p.z);
+          return { ...p, ...rotated };
+        })
+        .sort((a, b) => a.z - b.z);
+
+      sorted.forEach(p => {
+        const scale = 600 / (600 + p.z);
+        const screenX = width / 2 + p.x * scale;
+        const screenY = height / 2 + p.y * scale;
+        const alpha = Math.max(0.1, (p.z + 200) / 300);
+        
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = color;
+        ctx.font = `bold ${Math.max(10, 16 * scale)}px sans-serif`;
+        ctx.fillText(p.word, screenX, screenY);
+        ctx.restore();
+      });
+
+      animationId = requestAnimationFrame(draw);
+    };
+
+    // Mouse events
+    const handleMouseDown = (e: MouseEvent) => {
+      isDraggingRef.current = true;
+      lastMouseRef.current = { x: e.clientX, y: e.clientY };
+      canvas.style.cursor = 'grabbing';
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      const deltaX = e.clientX - lastMouseRef.current.x;
+      const deltaY = e.clientY - lastMouseRef.current.y;
+      lastMouseRef.current = { x: e.clientX, y: e.clientY };
+      
+      rotationYRef.current += deltaX * 0.005;
+      rotationXRef.current += deltaY * 0.005;
+      momentumYRef.current = deltaX * 0.0005;
+      momentumXRef.current = deltaY * 0.0005;
+    };
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      canvas.style.cursor = 'grab';
+    };
+
+    // Touch events
+    const handleTouchStart = (e: TouchEvent) => {
+      isDraggingRef.current = true;
+      const touch = e.touches[0];
+      lastMouseRef.current = { x: touch.clientX, y: touch.clientY };
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDraggingRef.current) return;
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - lastMouseRef.current.x;
+      const deltaY = touch.clientY - lastMouseRef.current.y;
+      lastMouseRef.current = { x: touch.clientX, y: touch.clientY };
+      
+      rotationYRef.current += deltaX * 0.005;
+      rotationXRef.current += deltaY * 0.005;
+      momentumYRef.current = deltaX * 0.0005;
+      momentumXRef.current = deltaY * 0.0005;
+    };
+
+    const handleTouchEnd = () => {
+      isDraggingRef.current = false;
+    };
+
+    canvas.style.cursor = 'grab';
+    canvas.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: true });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: true });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    init();
+    draw();
+
+    window.addEventListener('resize', init);
+    
+    return () => {
+      window.removeEventListener('resize', init);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      cancelAnimationFrame(animationId);
+    };
+  }, [words, color]);
+
+  // Fixed the typo here: <canvas> instead of anvas
+  return <canvas ref={canvasRef} className="w-full h-[300px] md:h-[400px]" />;
+};
+
+// --- CONTEXT ANIMATIONS (Fixed SVGs) ---
 
 const MatchCutVisualizer: React.FC<{ color: string }> = ({ color }) => (
-    <div className="w-full h-32 flex items-center justify-center gap-1 overflow-hidden opacity-60 group-hover:opacity-100 transition-opacity">
-        <div className="w-12 h-20 rounded-md animate-pulse" style={{ backgroundColor: `${color}40` }} />
-        <div className="w-px h-24 relative" style={{ backgroundColor: color }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full blur-sm animate-[ping_2s_infinite]" style={{ backgroundColor: color }} />
-        </div>
-        <div className="w-12 h-20 rounded-md animate-pulse delay-700" style={{ backgroundColor: `${color}60` }} />
+  <div className="w-full h-32 flex items-center justify-center gap-1 overflow-hidden opacity-60 group-hover:opacity-100 transition-opacity">
+    <div className="w-12 h-20 rounded-md animate-pulse" style={{ backgroundColor: `${color}40` }} />
+    <div className="w-px h-24 relative" style={{ backgroundColor: color }}>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full blur-sm animate-[ping_2s_infinite]" style={{ backgroundColor: color }} />
     </div>
+    <div className="w-12 h-20 rounded-md animate-pulse delay-700" style={{ backgroundColor: `${color}60` }} />
+  </div>
 );
 
 const SeedGrowthVisualizer: React.FC<{ color: string }> = ({ color }) => (
-    <div className="w-full h-32 relative flex items-center justify-center overflow-hidden">
-        <svg className="w-full h-full" viewBox="0 0 100 100">
-            <circle cx="50" cy="80" r="2" fill={color} className="animate-[ping_3s_infinite]" />
-            <path d="M50,80 Q50,60 50,50" fill="none" stroke={color} strokeWidth="1" className="animate-[grow_2s_ease-out_forwards]" />
-            <path d="M50,50 Q30,40 20,30" fill="none" stroke={color} strokeWidth="0.5" className="opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-            <path d="M50,50 Q70,40 80,30" fill="none" stroke={color} strokeWidth="0.5" className="opacity-0 group-hover:opacity-100 transition-opacity duration-1000 delay-300" />
-            <circle cx="20" cy="30" r="3" fill={`${color}40`} className="opacity-0 group-hover:opacity-100 animate-bounce delay-500" />
-            <circle cx="80" cy="30" r="3" fill={`${color}40`} className="opacity-0 group-hover:opacity-100 animate-bounce delay-700" />
-        </svg>
-    </div>
+  <div className="w-full h-32 relative flex items-center justify-center overflow-hidden">
+    <svg className="w-full h-full" viewBox="0 0 100 100">
+      {/* Fixed: <circle> instead of ircle */}
+      <circle cx="50" cy="80" r="2" fill={color} className="animate-[ping_3s_infinite]" />
+      <path d="M50,80 Q50,60 50,50" fill="none" stroke={color} strokeWidth="1" className="animate-[grow_2s_ease-out_forwards]" />
+      <path d="M50,50 Q30,40 20,30" fill="none" stroke={color} strokeWidth="0.5" className="opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+      <path d="M50,50 Q70,40 80,30" fill="none" stroke={color} strokeWidth="0.5" className="opacity-0 group-hover:opacity-100 transition-opacity duration-1000 delay-300" />
+      <circle cx="20" cy="30" r="3" fill={`${color}40`} className="opacity-0 group-hover:opacity-100 animate-bounce delay-500" />
+      <circle cx="80" cy="30" r="3" fill={`${color}40`} className="opacity-0 group-hover:opacity-100 animate-bounce delay-700" />
+    </svg>
+  </div>
 );
 
 const AudioWaveVisualizer: React.FC<{ color: string }> = ({ color }) => (
-    <div className="w-full h-16 flex items-center justify-center gap-1 opacity-50 group-hover:opacity-100 transition-all">
-        {Array.from({length: 12}).map((_, i) => (
-            <div key={i} className="w-1 rounded-full animate-[bounce_1s_infinite]" style={{ backgroundColor: color, height: `${Math.random() * 100}%`, animationDelay: `${i * 0.1}s` }} />
-        ))}
-    </div>
+  <div className="w-full h-16 flex items-center justify-center gap-1 opacity-50 group-hover:opacity-100 transition-all">
+    {Array.from({length: 12}).map((_, i) => (
+      <div key={i} className="w-1 rounded-full animate-[bounce_1s_infinite]" style={{ backgroundColor: color, height: `${Math.random() * 100}%`, animationDelay: `${i * 0.1}s` }} />
+    ))}
+  </div>
 );
 
 const StrategyGridVisualizer: React.FC<{ color: string }> = ({ color }) => (
-    <div className="w-full h-32 relative flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 grid grid-cols-6 grid-rows-4 gap-1 opacity-20 transform scale-110 group-hover:scale-100 transition-transform duration-700">
-            {Array.from({length: 24}).map((_, i) => (
-                <div key={i} className="rounded-sm transition-colors duration-300 hover:bg-current" style={{ color: Math.random() > 0.7 ? color : 'transparent', border: `1px solid ${color}` }} />
-            ))}
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-transparent" />
+  <div className="w-full h-32 relative flex items-center justify-center overflow-hidden">
+    <div className="absolute inset-0 grid grid-cols-6 grid-rows-4 gap-1 opacity-20 transform scale-110 group-hover:scale-100 transition-transform duration-700">
+      {Array.from({length: 24}).map((_, i) => (
+        <div key={i} className="rounded-sm transition-colors duration-300 hover:bg-current" style={{ color: Math.random() > 0.7 ? color : 'transparent', border: `1px solid ${color}` }} />
+      ))}
     </div>
+    <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-transparent" />
+  </div>
 );
 
-// --- 3D WORD CLOUD COMPONENT ---
-const WordCloud: React.FC<{ words: string[], color: string }> = ({ words, color }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        let particles: any[] = [];
-        let rotationX = 0;
-        let rotationY = 0;
-        let animationId: number;
-
-        const init = () => {
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = canvas.offsetWidth * dpr;
-            canvas.height = canvas.offsetHeight * dpr;
-            ctx.scale(dpr, dpr);
-            ctx.font = 'bold 12px sans-serif'; // Generic sans-serif fallback
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            const radius = Math.min(canvas.offsetWidth, canvas.offsetHeight) * 0.35;
-            
-            // Ensure we have enough words to form a sphere
-            const displayWords = [...words, ...words, ...words].slice(0, 30);
-            
-            particles = displayWords.map((word) => {
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos(Math.random() * 2 - 1);
-                return {
-                    word,
-                    x: radius * Math.sin(phi) * Math.cos(theta),
-                    y: radius * Math.sin(phi) * Math.sin(theta),
-                    z: radius * Math.cos(phi)
-                };
-            });
-        };
-
-        const draw = () => {
-            const width = canvas.offsetWidth;
-            const height = canvas.offsetHeight;
-            ctx.clearRect(0, 0, width, height);
-            rotationY += 0.002;
-            rotationX += 0.001;
-
-            particles.forEach(p => {
-                let x = p.x; let y = p.y; let z = p.z;
-                // Rotate around Y
-                let tx = x * Math.cos(rotationY) - z * Math.sin(rotationY);
-                let tz = z * Math.cos(rotationY) + x * Math.sin(rotationY);
-                x = tx; z = tz;
-                // Rotate around X
-                let ty = y * Math.cos(rotationX) - z * Math.sin(rotationX);
-                z = z * Math.cos(rotationX) + y * Math.sin(rotationX);
-                y = ty;
-
-                const scale = 400 / (400 + z);
-                const screenX = width / 2 + x * scale;
-                const screenY = height / 2 + y * scale;
-                const alpha = Math.max(0.1, (z + 200) / 300);
-
-                ctx.save();
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = color; 
-                // Adjust font size based on depth (z)
-                ctx.font = `bold ${Math.max(10, 16 * scale)}px sans-serif`;
-                ctx.fillText(p.word, screenX, screenY);
-                ctx.restore();
-            });
-            animationId = requestAnimationFrame(draw);
-        };
-
-        init(); 
-        draw();
-        
-        window.addEventListener('resize', init);
-        return () => { 
-            window.removeEventListener('resize', init); 
-            cancelAnimationFrame(animationId); 
-        };
-    }, [words, color]);
-
-    return <canvas ref={canvasRef} className="w-full h-[300px] md:h-[400px]" />;
-};
-
-// --- COURSE CONTENT DATA ---
-// NOTE: Ensure your 'course.id' matches these keys ('marketing', 'video-editing', 'gen-ai')
+// --- COURSE CONTENT DATA (Completed & Merged) ---
 const COURSE_DETAILS: Record<string, any> = {
   marketing: {
     theme: { bg: '#fff7e8', accent: '#ff9f55', text: '#301b0f', secondary: '#ffd6a6' },
@@ -157,17 +239,17 @@ const COURSE_DETAILS: Record<string, any> = {
     he: {
       pill: 'ניהול קריאייטיב',
       heroTitle: 'לפצח את הבריף.',
-      heroSubtitle: 'סדנה למנהלי סטודיו ואנשי אסטרטגיה. איך לתרגם "שיווקית" ל"ויזואלית" ולייצר נכסים מולטי-מודאליים במהירות.',
+      heroSubtitle: 'סדנה מעמיקה לאנשי אסטרטגיה ומנהלי סטודיו. איך לתרגם את השפה השיווקית לויזואלית, ולייצר נכסים מולטי-מודאליים במהירות.',
       shiftLabel: 'הבעיה',
       shiftTitle: 'הפער בין המילה לתמונה.',
       shiftBody: [
-        'לקוחות מדברים ברגשות ("שיהיה חדשני אבל חם"), ו-AI עובד בלוגיקה. הפער הזה עולה לסטודיו שלכם בשעות של ניסוי וטעייה.',
-        'בקורס נלמד מתודולוגיה סדורה לפירוק בריף, בניית "לקסיקון מותג" ויזואלי, ושליטה בכל כלי הייצור (תמונה, וידאו, סאונד) כדי לספר סיפור אחד מדויק.'
+        'לקוחות מדברים ברגשות ("שיהיה חדשני אבל חם"), ואילו AI עובד בלוגיקה. הפער הזה עולה לסטודיו שלכם בשעות של ניסוי וטעייה, פידבקים אינסופיים וכאב ראש.',
+        'בקורס הזה נלמד מתודולוגיה מובנית לפירוק בריף, בניית "לקסיקון מותג" ויזואלי, ושליטה בכלי הייצור (תמונה, וידאו, סאונד) כדי לספר סיפור אחד מדויק – בנשימה אחת רציפה.'
       ],
       methodLabel: 'השיטה',
       methodTitle: 'מסמנטיקה לפיקסלים.',
       methodSteps: [
-        { label: 'מודול 01', title: 'ניתוח סמנטי', body: 'תרגום ערכי מותג לפרומפטים לוגיים.', icon: <BrainCircuit className="w-6 h-6" />, anim: <StrategyGridVisualizer color="#ff9f55" /> },
+        { label: 'מודול 01', title: 'ניתוח סמנטי', body: 'תרגום ערכי מותג לפרומפטים לוגיים ומובנים.', icon: <BrainCircuit className="w-6 h-6" />, anim: <StrategyGridVisualizer color="#ff9f55" /> },
         { label: 'מודול 02', title: 'השפה הויזואלית', body: 'יצירת Style Tokens עקביים לתמונות ווידאו.', icon: <Layers className="w-6 h-6" /> },
         { label: 'מודול 03', title: 'סינתזה מולטי-מודאלית', body: 'איחוד של טקסט, תמונה וסאונד לתוצר שלם.', icon: <Zap className="w-6 h-6" /> }
       ]
@@ -175,7 +257,7 @@ const COURSE_DETAILS: Record<string, any> = {
     en: {
       pill: 'Creative Management',
       heroTitle: 'Crack the Brief.',
-      heroSubtitle: 'For Studio Managers & Strategists. Translate "Marketing Speak" into "Visual Logic" and streamline multimodal production.',
+      heroSubtitle: 'A deep-dive workshop for strategists and studio managers. Translate marketing speak into visual logic and produce multimodal assets at speed.',
       shiftLabel: 'The Gap',
       shiftTitle: 'Bridging Word and Image.',
       shiftBody: [
@@ -192,7 +274,7 @@ const COURSE_DETAILS: Record<string, any> = {
     }
   },
   'video-editing': {
-    theme: { bg: '#fdf2f8', accent: '#db2777', text: '#831843', secondary: '#fbcfe8' }, // Pink/Rose theme
+    theme: { bg: '#fdf2f8', accent: '#db2777', text: '#831843', secondary: '#fbcfe8' },
     words: ['Rhythm', 'Cut', 'Flow', 'Beat', 'Timeline', 'Match-Cut', 'Sound', 'Motion', 'Tempo', 'Style', 'Effect', 'Transition', 'Story', 'Frame', 'Keyframe'],
     he: {
       pill: 'עריכה ופוסט',
@@ -232,7 +314,7 @@ const COURSE_DETAILS: Record<string, any> = {
     }
   },
   'gen-ai': {
-    theme: { bg: '#f0fdf4', accent: '#059669', text: '#064e3b', secondary: '#a7f3d0' }, // Emerald theme
+    theme: { bg: '#f0fdf4', accent: '#059669', text: '#064e3b', secondary: '#a7f3d0' },
     words: ['Seed', 'Growth', 'Chaos', 'Nurture', 'Prompt', 'Latent', 'Space', 'Diffusion', 'Control', 'Upscale', 'Dream', 'Imagine', 'Iterate', 'Form', 'Style'],
     he: {
       pill: 'יצירה ג׳נרטיבית',
@@ -273,6 +355,7 @@ const COURSE_DETAILS: Record<string, any> = {
   }
 };
 
+// --- MAIN MODAL COMPONENT ---
 export const CourseModal: React.FC<CourseModalProps> = ({ course, onClose, currentLang, onToggleLang }) => {
   const [isVisible, setIsVisible] = useState(false);
   
@@ -340,9 +423,9 @@ export const CourseModal: React.FC<CourseModalProps> = ({ course, onClose, curre
                     {content.heroSubtitle}
                 </p>
 
-                {/* 3D Cloud integrated into hero background/midground */}
-                <div className="w-full max-w-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 md:opacity-30 pointer-events-none mix-blend-multiply">
-                    <WordCloud words={words} color={theme.text} />
+                {/* 3D Interactive Cloud */}
+                <div className="w-full max-w-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30 md:opacity-40 pointer-events-auto mix-blend-multiply hover:mix-blend-normal transition-all duration-300 cursor-grab active:cursor-grabbing">
+                    <InteractiveWordCloud words={words} color={theme.text} />
                 </div>
 
                 <div className="mt-auto pb-12 animate-bounce opacity-40">
