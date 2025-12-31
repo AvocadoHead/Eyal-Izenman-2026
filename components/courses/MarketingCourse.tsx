@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { ChevronDown, ArrowRight, X } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -98,110 +98,133 @@ const words = [
 
 // --- Sub-Components ---
 
-/** Background Scroll Trace (Canvas) */
+/** 
+ * Advanced "Vine/DNA" Scroll Trace 
+ * A fixed canvas that draws multiple interweaving strands based on scroll position.
+ */
 const ScrollTraceCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { scrollYProgress } = useScroll();
-  // Adjusted spring for more responsive drawing
-  const smoothScroll = useSpring(scrollYProgress, { stiffness: 100, damping: 30, mass: 1 });
+  // We use a spring to make the drawing feel fluid, not robotic
+  const smoothScroll = useSpring(scrollYProgress, { stiffness: 60, damping: 20, mass: 0.5 });
   
+  // Configuration for the strands
+  const strands = useMemo(() => [
+    { color: 'rgba(255, 159, 85, 0.6)', width: 3, freq: 0.008, amp: 40, phase: 0 },   // Main Orange
+    { color: 'rgba(255, 200, 210, 0.5)', width: 2, freq: 0.012, amp: 30, phase: 2 },   // Rose
+    { color: 'rgba(158, 252, 255, 0.4)', width: 4, freq: 0.005, amp: 50, phase: 4 },   // Cyan
+    { color: 'rgba(255, 220, 180, 0.3)', width: 1, freq: 0.02,  amp: 15, phase: 1 }    // Thin Light
+  ], []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Generate path points
-    const generatePoints = () => {
-      const segments = 12; // More segments for smoother long scroll
-      const pts = [];
-      for (let i = 0; i < segments; i++) {
-        const t = i / (segments - 1);
-        let y = t; // Direct mapping to height
-        // Jitter x
-        const bias = i % 2 === 0 ? 0.8 : 0.2;
-        let x = bias + (Math.random() - 0.5) * 0.3;
-        x = Math.min(0.9, Math.max(0.1, x));
-        pts.push({ x, y });
-      }
-      return pts;
-    };
-    
-    let tracePoints = generatePoints();
     let width = 0;
     let height = 0;
+    
+    // We pre-calculate a "Spine" path that wanders down the screen
+    // This represents the central path the strands wrap around
+    let spinePoints: {x: number, y: number}[] = [];
+    const totalPathHeight = window.innerHeight * 4; // Virtual height of the path (adjust based on content length)
+
+    const generateSpine = () => {
+      spinePoints = [];
+      const segments = 200; // Resolution
+      const centerX = width * 0.15; // Position the trace on the left side (15% width)
+      
+      for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        const y = t * height; // Map to viewport height for drawing
+        
+        // Complex noise-like wander for the spine
+        // Sum of sines to create organic movement
+        const wander = 
+          Math.sin(t * 10) * 30 + 
+          Math.cos(t * 23) * 15 +
+          Math.sin(t * 5) * 60;
+          
+        spinePoints.push({ x: centerX + wander, y: y });
+      }
+    };
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       width = window.innerWidth;
-      height = window.innerHeight; // Viewport height
+      height = window.innerHeight;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvas.style.width = '100%';
       canvas.style.height = '100%';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      generateSpine();
     };
 
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
+      
+      // Get current scroll (0 to 1)
       const progress = smoothScroll.get();
       
-      const paths = [
-        { color: 'rgba(255, 200, 210, 0.6)', offset: -25 },
-        { color: 'rgba(200, 220, 255, 0.55)', offset: 0 },
-        { color: 'rgba(240, 210, 255, 0.5)', offset: 25 }
-      ];
-
-      const points = tracePoints.map(p => ({ x: p.x * width, y: p.y * height }));
-      const totalSegs = points.length - 1;
+      // We only draw the portion of the spine visible based on scroll
+      // But we map scroll 0..1 to the full height of the viewport path
+      // Actually, for a fixed "growing" effect, we want the path to fill the screen as we scroll.
+      // Let's interpret progress: 0 = top of screen, 1 = bottom of screen.
+      // BUT, since we want it to "write" the whole journey, let's say the path is fixed on screen,
+      // and we draw it from 0% to "progress%".
       
-      // Map progress to drawing the full path
-      const visible = Math.max(0, Math.min(1, progress * 1.5)); // Draw slightly ahead
-      const segPos = visible * totalSegs;
-      const fullSegs = Math.floor(segPos);
-      const partialT = segPos - fullSegs;
+      // Calculate the index of the last point to draw
+      const maxIndex = Math.floor(progress * (spinePoints.length - 1));
+      if (maxIndex < 1) {
+        requestAnimationFrame(draw);
+        return;
+      }
 
-      paths.forEach((pConf, idx) => {
-        ctx.save();
-        ctx.strokeStyle = pConf.color;
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = pConf.color;
+      // Draw each strand
+      strands.forEach((strand) => {
+        ctx.beginPath();
+        ctx.strokeStyle = strand.color;
+        ctx.lineWidth = strand.width;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
 
-        ctx.beginPath();
-        ctx.moveTo(points[0].x + pConf.offset, points[0].y);
+        // Start at first point
+        // Apply initial offset based on wave function
+        const p0 = spinePoints[0];
+        ctx.moveTo(p0.x + Math.sin(strand.phase) * strand.amp, p0.y);
 
-        for (let i = 0; i < totalSegs; i++) {
-          if (i >= fullSegs + 1) break;
+        for (let i = 0; i <= maxIndex; i++) {
+          const p = spinePoints[i];
+          // We use 'i' (index) as time for the sine wave to make it weave
+          // We also add a subtle time-based animation `performance.now()` so it breathes slightly
+          const time = performance.now() * 0.0005; 
           
-          const p0 = points[i];
-          const p1 = points[i+1];
-          const dx = p1.x - p0.x;
-          const dy = p1.y - p0.y;
-          const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+          // The perpendicular offset
+          const offset = Math.sin(i * 0.1 + strand.phase + time) * strand.amp;
           
-          const wave = Math.sin((i/totalSegs)*Math.PI*2 + idx) * dist * 0.1;
-          const perpX = -dy/dist * wave;
-          const perpY = dx/dist * wave;
-
-          const cp1x = p0.x + dx*0.33 + perpX + pConf.offset;
-          const cp1y = p0.y + dy*0.33 + perpY;
-          const cp2x = p0.x + dx*0.66 + perpX + pConf.offset;
-          const cp2y = p0.y + dy*0.66 + perpY;
-
-          if (i < fullSegs) {
-            ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1.x + pConf.offset, p1.y);
-          } else {
-             const qx = p0.x + dx * partialT;
-             const qy = p0.y + dy * partialT;
-             ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, qx + pConf.offset, qy);
-          }
+          ctx.lineTo(p.x + offset, p.y);
         }
         ctx.stroke();
-        ctx.restore();
       });
+
+      // Draw "Head" Glow
+      if (maxIndex > 0 && maxIndex < spinePoints.length) {
+        const headP = spinePoints[maxIndex];
+        const time = performance.now() * 0.0005;
+        
+        // We average the strands positions for the head or just pick the spine center
+        // Let's draw a glowing orb at the spine center
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = 'rgba(255, 160, 100, 0.8)';
+        ctx.fillStyle = 'rgba(255, 250, 240, 0.9)';
+        ctx.beginPath();
+        ctx.arc(headP.x, headP.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset
+      }
+
       requestAnimationFrame(draw);
     };
 
@@ -213,9 +236,10 @@ const ScrollTraceCanvas = () => {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animId);
     };
-  }, []); 
+  }, [strands, smoothScroll]); 
 
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[-1] opacity-80 mix-blend-multiply" />;
+  // Fixed container, behind content
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[-1]" />;
 };
 
 /** 3D Word Cloud (Canvas) */
