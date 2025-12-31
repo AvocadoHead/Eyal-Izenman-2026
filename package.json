@@ -11,6 +11,9 @@
   "dependencies": {
     "lucide-react": "^0.559.0",
     "react-dom": "^19.2.1",
+        "framer-motion": "^11.15.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0",
     "react": "^19.2.1"
   },
   "devDependencies": {
