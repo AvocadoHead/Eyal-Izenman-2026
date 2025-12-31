@@ -15,7 +15,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// --- Content & Translations (Unchanged) ---
+// --- Content & Translations ---
 const translations = {
   en: {
     brand: 'Crack the Brief | Multimodal Workshop',
@@ -98,95 +98,23 @@ const words = [
 
 // --- Sub-Components ---
 
-// Simple Pseudo-Random Number Generator for consistent vine patterns
-const seedRandom = (seed: number) => {
-  let x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-};
-
-// 1D Noise for organic wandering
-const noise = (x: number, seed: number) => {
-  const i = Math.floor(x);
-  const f = x - i;
-  const mix = (a: number, b: number, t: number) => a * (1 - t) + b * t;
-  return mix(seedRandom(i + seed), seedRandom(i + 1 + seed), f * f * (3 - 2 * f));
-};
-
-interface Branch {
-  points: {x: number, y: number}[];
-  color: string;
-  width: number;
-  startProgress: number; // When does this branch start drawing (0-1)
-  endProgress: number;   // When does it finish (0-1)
-}
-
 /** 
- * Fractal Vine Scroll Trace 
+ * Advanced "Vine/DNA" Scroll Trace 
+ * A fixed canvas that draws multiple interweaving strands based on scroll position.
  */
-const ScrollTraceCanvas = ({ containerRef }: { containerRef: React.RefObject<HTMLDivElement> }) => {
+const ScrollTraceCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
-  // Use scroll of the specific container, not window
-  const { scrollYProgress } = useScroll({ container: containerRef });
+  const { scrollYProgress } = useScroll();
+  // We use a spring to make the drawing feel fluid, not robotic
   const smoothScroll = useSpring(scrollYProgress, { stiffness: 60, damping: 20, mass: 0.5 });
   
-  // Memoize tree structure to prevent regeneration on re-render
-  const branches = useMemo(() => {
-    const list: Branch[] = [];
-    const colors = [
-      'rgba(255, 159, 85, 0.65)', // Orange
-      'rgba(244, 114, 182, 0.55)', // Rose
-      'rgba(34, 211, 238, 0.5)'    // Cyan
-    ];
-
-    // Helper to generate a path
-    const generatePath = (
-      startX: number, 
-      startY: number, 
-      length: number, 
-      angleBase: number, 
-      startP: number,
-      endP: number,
-      width: number,
-      color: string,
-      seed: number
-    ) => {
-      const points = [];
-      const segments = 100;
-      
-      for (let i = 0; i <= segments; i++) {
-        const t = i / segments;
-        const y = startY + t * length;
-        
-        // Organic wander using noise
-        const drift = (noise(t * 3, seed) - 0.5) * 150; 
-        const wave = Math.sin(t * 10 + seed) * 20;
-        
-        // Bias towards angle
-        const xOffset = Math.sin(angleBase) * (t * length * 0.3);
-        
-        points.push({ x: startX + drift + wave + xOffset, y: y });
-      }
-      return { points, color, width, startProgress: startP, endProgress: endP };
-    };
-
-    // 1. Main Root (Thick)
-    list.push(generatePath(200, 0, 2500, 0, 0, 1, 4, colors[0], 100));
-
-    // 2. Splits
-    // Split 1 at 15%
-    list.push(generatePath(220, 300, 1000, 0.5, 0.15, 0.6, 2.5, colors[1], 200));
-    // Split 2 at 35%
-    list.push(generatePath(180, 800, 1200, -0.4, 0.35, 0.85, 2.5, colors[2], 300));
-    // Split 3 at 60%
-    list.push(generatePath(240, 1400, 800, 0.8, 0.6, 1.0, 2, colors[0], 400));
-    
-    // 3. Micro splits (Details)
-    list.push(generatePath(200, 500, 400, -0.8, 0.2, 0.4, 1.5, colors[2], 500));
-    list.push(generatePath(250, 1100, 500, 0.6, 0.45, 0.65, 1.5, colors[1], 600));
-
-    return list;
-  }, []);
+  // Configuration for the strands
+  const strands = useMemo(() => [
+    { color: 'rgba(255, 159, 85, 0.6)', width: 3, freq: 0.008, amp: 40, phase: 0 },   // Main Orange
+    { color: 'rgba(255, 200, 210, 0.5)', width: 2, freq: 0.012, amp: 30, phase: 2 },   // Rose
+    { color: 'rgba(158, 252, 255, 0.4)', width: 4, freq: 0.005, amp: 50, phase: 4 },   // Cyan
+    { color: 'rgba(255, 220, 180, 0.3)', width: 1, freq: 0.02,  amp: 15, phase: 1 }    // Thin Light
+  ], []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -196,6 +124,31 @@ const ScrollTraceCanvas = ({ containerRef }: { containerRef: React.RefObject<HTM
 
     let width = 0;
     let height = 0;
+    
+    // We pre-calculate a "Spine" path that wanders down the screen
+    // This represents the central path the strands wrap around
+    let spinePoints: {x: number, y: number}[] = [];
+    const totalPathHeight = window.innerHeight * 4; // Virtual height of the path (adjust based on content length)
+
+    const generateSpine = () => {
+      spinePoints = [];
+      const segments = 200; // Resolution
+      const centerX = width * 0.15; // Position the trace on the left side (15% width)
+      
+      for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        const y = t * height; // Map to viewport height for drawing
+        
+        // Complex noise-like wander for the spine
+        // Sum of sines to create organic movement
+        const wander = 
+          Math.sin(t * 10) * 30 + 
+          Math.cos(t * 23) * 15 +
+          Math.sin(t * 5) * 60;
+          
+        spinePoints.push({ x: centerX + wander, y: y });
+      }
+    };
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -206,68 +159,72 @@ const ScrollTraceCanvas = ({ containerRef }: { containerRef: React.RefObject<HTM
       canvas.style.width = '100%';
       canvas.style.height = '100%';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      generateSpine();
     };
 
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
-      const progress = smoothScroll.get(); // 0 to 1 based on container scroll
-
-      // Global scale to fit the "virtual height" of paths into current screen if needed
-      // But we want them to stay fixed relative to content? 
-      // User requested "advances as we scroll".
-      // We translate the canvas up slightly to simulate camera movement or keep it fixed?
-      // Best effect: Fixed background, drawing progressively.
       
-      // Center the coordinate system roughly
-      ctx.save();
-      // Optional: Parallax shift. const yShift = -progress * 200; 
-      // ctx.translate(width * 0.1, yShift); // Shift slightly left
-
-      // For responsivity, ensure startX matches screen width somewhat
-      const xBase = width < 768 ? width * 0.1 : width * 0.15;
+      // Get current scroll (0 to 1)
+      const progress = smoothScroll.get();
       
-      branches.forEach(branch => {
-        // Calculate how much of THIS branch is visible
-        // Map global progress to branch's specific timeline
-        if (progress < branch.startProgress) return;
+      // We only draw the portion of the spine visible based on scroll
+      // But we map scroll 0..1 to the full height of the viewport path
+      // Actually, for a fixed "growing" effect, we want the path to fill the screen as we scroll.
+      // Let's interpret progress: 0 = top of screen, 1 = bottom of screen.
+      // BUT, since we want it to "write" the whole journey, let's say the path is fixed on screen,
+      // and we draw it from 0% to "progress%".
+      
+      // Calculate the index of the last point to draw
+      const maxIndex = Math.floor(progress * (spinePoints.length - 1));
+      if (maxIndex < 1) {
+        requestAnimationFrame(draw);
+        return;
+      }
 
-        const branchDuration = branch.endProgress - branch.startProgress;
-        const branchLocalProgress = Math.min(1, (progress - branch.startProgress) / branchDuration);
-        
-        const visiblePointsCount = Math.floor(branchLocalProgress * branch.points.length);
-        if (visiblePointsCount < 2) return;
-
+      // Draw each strand
+      strands.forEach((strand) => {
         ctx.beginPath();
-        ctx.strokeStyle = branch.color;
-        ctx.lineWidth = branch.width;
+        ctx.strokeStyle = strand.color;
+        ctx.lineWidth = strand.width;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
 
-        // Draw path
-        // Offset X dynamically based on screen size
-        const p0 = branch.points[0];
-        ctx.moveTo(p0.x + xBase - 200, p0.y); // -200 to offset the hardcoded generation X
+        // Start at first point
+        // Apply initial offset based on wave function
+        const p0 = spinePoints[0];
+        ctx.moveTo(p0.x + Math.sin(strand.phase) * strand.amp, p0.y);
 
-        for (let i = 1; i < visiblePointsCount; i++) {
-          const p = branch.points[i];
-          ctx.lineTo(p.x + xBase - 200, p.y);
+        for (let i = 0; i <= maxIndex; i++) {
+          const p = spinePoints[i];
+          // We use 'i' (index) as time for the sine wave to make it weave
+          // We also add a subtle time-based animation `performance.now()` so it breathes slightly
+          const time = performance.now() * 0.0005; 
+          
+          // The perpendicular offset
+          const offset = Math.sin(i * 0.1 + strand.phase + time) * strand.amp;
+          
+          ctx.lineTo(p.x + offset, p.y);
         }
         ctx.stroke();
-
-        // Draw Glowing Tip
-        if (branchLocalProgress < 1.0) {
-           const tip = branch.points[visiblePointsCount - 1];
-           ctx.shadowBlur = 15;
-           ctx.shadowColor = branch.color;
-           ctx.fillStyle = '#fff';
-           ctx.beginPath();
-           ctx.arc(tip.x + xBase - 200, tip.y, branch.width * 1.5, 0, Math.PI * 2);
-           ctx.fill();
-           ctx.shadowBlur = 0;
-        }
       });
 
-      ctx.restore();
+      // Draw "Head" Glow
+      if (maxIndex > 0 && maxIndex < spinePoints.length) {
+        const headP = spinePoints[maxIndex];
+        const time = performance.now() * 0.0005;
+        
+        // We average the strands positions for the head or just pick the spine center
+        // Let's draw a glowing orb at the spine center
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = 'rgba(255, 160, 100, 0.8)';
+        ctx.fillStyle = 'rgba(255, 250, 240, 0.9)';
+        ctx.beginPath();
+        ctx.arc(headP.x, headP.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset
+      }
+
       requestAnimationFrame(draw);
     };
 
@@ -279,8 +236,9 @@ const ScrollTraceCanvas = ({ containerRef }: { containerRef: React.RefObject<HTM
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animId);
     };
-  }, [branches, smoothScroll]);
+  }, [strands, smoothScroll]); 
 
+  // Fixed container, behind content
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[-1]" />;
 };
 
@@ -441,8 +399,6 @@ const Pill = ({ children }: { children: React.ReactNode }) => (
 // --- Main Component ---
 export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClose }) => {
   const [lang, setLang] = useState<'en' | 'he'>(currentLang || 'he');
-  // New ref for the scrollable container
-  const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     if (currentLang) setLang(currentLang);
@@ -452,11 +408,9 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClos
   const isRtl = lang === 'he';
 
   return (
-    // FULLSCREEN WRAPPER FOR SCROLL ISOLATION
     <div 
-      ref={containerRef}
       className={cn(
-        "fixed inset-0 z-50 overflow-y-auto font-sans text-[#2d1c0d] selection:bg-orange-200 selection:text-orange-900 isolate",
+        "min-h-screen font-sans text-[#2d1c0d] overflow-x-hidden selection:bg-orange-200 selection:text-orange-900 relative isolate",
         isRtl ? "rtl" : "ltr"
       )}
       dir={isRtl ? "rtl" : "ltr"}
@@ -478,11 +432,11 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClos
         />
       </div>
 
-      {/* Scroll Trace - z-index -1 - Passing containerRef to link scroll logic! */}
-      <ScrollTraceCanvas containerRef={containerRef} />
+      {/* Scroll Trace - z-index -1 */}
+      <ScrollTraceCanvas />
 
       {/* Header - z-index 50 */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-[#fff7e8]/80 backdrop-blur-md border-b border-orange-200/30">
+      <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 py-4 bg-[#fff7e8]/80 backdrop-blur-md border-b border-orange-200/30">
         <div className="flex items-center gap-4">
           {onClose && (
              <button 
@@ -490,13 +444,14 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClos
                className="p-2 rounded-full hover:bg-black/5 transition-colors text-stone-700"
                aria-label={t.close}
              >
-               <X className="w-6 h-6" />
+               <X className="w-5 h-5" />
              </button>
           )}
 
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg overflow-hidden bg-black/10 relative">
                <video src="https://assets.codepen.io/t-1/optopia-eye.mp4" autoPlay muted loop playsInline className="w-full h-full object-cover" /> 
+               {/* Fallback visual if video fails */}
                <div className="absolute inset-0 bg-gradient-to-tr from-orange-400 to-rose-400 opacity-50 mix-blend-overlay" />
             </div>
             <span className="font-bold text-sm tracking-wide uppercase hidden sm:block">{t.brand}</span>
@@ -519,7 +474,7 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClos
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - z-index 10 */}
       <main className="max-w-6xl mx-auto px-6 pt-32 pb-20 relative z-10">
         
         {/* HERO SECTION */}
@@ -542,8 +497,9 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClos
           </FadeIn>
 
           <FadeIn delay={0.2} className="h-[50vh] lg:h-[600px] w-full relative z-30">
-            {/* Visual Container */}
+            {/* Visual Container - Strictly opaque enough or z-indexed to sit OVER the line */}
             <div className="w-full h-full rounded-3xl border border-white/20 shadow-2xl bg-gradient-to-br from-cyan-50/20 to-white/10 backdrop-blur-md relative overflow-hidden group z-30">
+              {/* Glowing orbs inside visual */}
               <div className="absolute top-[20%] left-[20%] w-32 h-32 bg-cyan-200/40 rounded-full blur-2xl animate-pulse" />
               <div className="absolute bottom-[20%] right-[20%] w-40 h-40 bg-orange-200/30 rounded-full blur-2xl animate-pulse delay-700" />
               <WordCloud />
