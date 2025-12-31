@@ -28,7 +28,7 @@ const translations = {
     modulesTitle: 'Taming the Machine',
     modules: [
       { icon: Brain, title: 'The LLM Mindset', body: 'Understanding how models think. Advanced prompt engineering, context windows, and dialogue strategy.' },
-      { icon: Wand2, title: 'Visual Alchemy', body: 'Midjourney & DALL-E mastery. Composition, lighting, styling, and consistent character generation.' },
+      { icon: Wand2, title: 'Visual Alchemy', body: 'generative tools mastery. Composition, lighting, styling, and consistent character generation.' },
       { icon: Layers, title: 'Motion & Video', body: 'Bringing statics to life. Runway, Pika, and the emerging workflow of AI cinematography.' },
       { icon: Zap, title: 'The Synthesis', body: 'Combining tools. Text-to-Image-to-Video-to-Sound. Building complete multimedia assets.' },
     ],
@@ -50,7 +50,7 @@ const translations = {
     modulesTitle: 'לאלף את המכונה',
     modules: [
       { icon: Brain, title: 'תודעת ה-LLM', body: 'להבין איך המודל חושב. הנדסת פרומפטים מתקדמת, חלונות הקשר ואסטרטגיית דיאלוג.' },
-      { icon: Wand2, title: 'אלכימיה חזותית', body: 'שליטה ב-Midjourney ו-DALL-E. קומפוזיציה, תאורה, סגנון ושמירה על עקביות דמויות.' },
+      { icon: Wand2, title: 'אלכימיה חזותית', body: 'שליטה ב-כלים ג'נרטיביים. קומפוזיציה, תאורה, סגנון ושמירה על עקביות דמויות.' },
       { icon: Layers, title: 'תנועה ווידאו', body: 'להפיח חיים בסטילס. Runway, Pika, וזרימת העבודה החדשה של סינמטוגרפיה מבוססת AI.' },
       { icon: Zap, title: 'הסינתזה', body: 'שילוב כלים. מטקסט לתמונה, לווידאו, לסאונד. בניית נכסים מולטימדיה שלמים.' },
     ],
@@ -255,12 +255,10 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
         <section className="mb-32 grid md:grid-cols-2 gap-12 items-center">
             <FadeIn>
                 <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700">
-                     <img 
-                        src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1000&auto=format&fit=crop" 
-                        alt="AI Art" 
+                     <video autoPlay muted loop playsInline 
+                        src="https://github.com/AvocadoHead/Eyal-Izenman-2026/raw/main/Assets/Puzzlement.mp4" 
                         className="w-full h-full object-cover"
-                     />
-                     <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/60 to-transparent" />
+                    ></video>                    <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/60 to-transparent" />
                 </div>
             </FadeIn>
             <FadeIn delay={0.2}>
