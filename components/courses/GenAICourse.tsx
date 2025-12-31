@@ -28,7 +28,7 @@ const translations = {
     modules: [
       { icon: Brain, title: 'The LLM Mindset', body: 'Understanding how models think. Advanced prompt engineering, context windows, and dialogue strategy.' },
       { icon: Wand2, title: 'Visual Alchemy', body: 'Generative tools mastery. Composition, lighting, styling, and consistent character generation.' },
-      { icon: Layers, title: 'Motion & Video', body: 'Bringing statics to life. Runway, Pika, and the emerging workflow of AI cinematography.' },
+      { icon: Layers, title: 'Motion & Video', body: 'Bringing statics to life. Canvas based multi-modal platforms, and the emerging workflow of AI cinematography.' },
       { icon: Zap, title: 'The Synthesis', body: 'Combining tools. Text-to-Image-to-Video-to-Sound. Building complete multimedia assets.' },
     ],
     audienceLabel: 'Who is this for?',
@@ -50,7 +50,7 @@ const translations = {
     modules: [
       { icon: Brain, title: 'תודעת ה-LLM', body: 'להבין איך המודל חושב. הנדסת פרומפטים מתקדמת, חלונות הקשר ואסטרטגיית דיאלוג.' },
       { icon: Wand2, title: 'אלכימיה חזותית', body: 'שליטה בכלים ג׳נרטיביים. קומפוזיציה, תאורה, סגנון ושמירה על עקביות דמויות.' },
-      { icon: Layers, title: 'תנועה ווידאו', body: 'להפיח חיים בסטילס. Runway, Pika, וזרימת העבודה החדשה של סינמטוגרפיה מבוססת AI.' },
+      { icon: Layers, title: 'תנועה ווידאו', body: 'להפיח חיים בסטילס. פלטפורמות מולטימודליות מבוססות קנבס, וזרימת העבודה החדשה של סינמטוגרפיה מבוססת AI.' },
       { icon: Zap, title: 'הסינתזה', body: 'שילוב כלים. מטקסט לתמונה, לווידאו, לסאונד. בניית נכסים מולטימדיה שלמים.' },
     ],
     audienceLabel: 'למי זה מתאים?',
@@ -210,13 +210,13 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
       <NeuralTraceCanvas containerRef={containerRef} />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-white/70 backdrop-blur-md border-b border-indigo-100">
+      <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 py-4 bg-white/70 backdrop-blur-md border-b border-indigo-100">
         <div className="flex items-center gap-4">
           {onClose && (
              <button 
-               onClick={onClose} 
-               className="p-2 rounded-full hover:bg-black/5 transition-colors text-slate-700"
-               aria-label={t.close}
+                onClick={onClose} 
+                className="p-2 rounded-full hover:bg-black/5 transition-colors text-slate-700"
+                aria-label={t.close}
              >
                <X className="w-5 h-5" />
              </button>
@@ -232,7 +232,7 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 pt-24 pb-20 relative z-10">
+      <main className="max-w-5xl mx-auto px-6 pt-32 pb-20 relative z-10">
         
         {/* HERO */}
         <section className="min-h-[80vh] flex flex-col justify-center items-center text-center mb-20">
