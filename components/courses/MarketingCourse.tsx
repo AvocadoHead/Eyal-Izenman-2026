@@ -102,7 +102,8 @@ const words = [
 const ScrollTraceCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { scrollYProgress } = useScroll();
-  const smoothScroll = useSpring(scrollYProgress, { stiffness: 50, damping: 15, mass: 0.5 });
+  // Adjusted spring for more responsive drawing
+  const smoothScroll = useSpring(scrollYProgress, { stiffness: 100, damping: 30, mass: 1 });
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -112,16 +113,15 @@ const ScrollTraceCanvas = () => {
 
     // Generate path points
     const generatePoints = () => {
-      const segments = 9;
+      const segments = 12; // More segments for smoother long scroll
       const pts = [];
       for (let i = 0; i < segments; i++) {
         const t = i / (segments - 1);
-        let y = t + (Math.random() - 0.5) * 0.08;
-        y = Math.min(1, Math.max(0, y));
-        // Snake bias
-        const bias = i % 2 === 0 ? 0.75 : 0.25;
-        let x = bias + (Math.random() - 0.5) * 0.25;
-        x = Math.min(0.95, Math.max(0.05, x));
+        let y = t; // Direct mapping to height
+        // Jitter x
+        const bias = i % 2 === 0 ? 0.8 : 0.2;
+        let x = bias + (Math.random() - 0.5) * 0.3;
+        x = Math.min(0.9, Math.max(0.1, x));
         pts.push({ x, y });
       }
       return pts;
@@ -134,10 +134,9 @@ const ScrollTraceCanvas = () => {
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       width = window.innerWidth;
-      height = window.innerHeight * 1.5; // taller than viewport
+      height = window.innerHeight; // Viewport height
       canvas.width = width * dpr;
       canvas.height = height * dpr;
-      // Important: Ensure canvas style is full width/height
       canvas.style.width = '100%';
       canvas.style.height = '100%';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -147,7 +146,6 @@ const ScrollTraceCanvas = () => {
       ctx.clearRect(0, 0, width, height);
       const progress = smoothScroll.get();
       
-      // Pastel paths config
       const paths = [
         { color: 'rgba(255, 200, 210, 0.6)', offset: -25 },
         { color: 'rgba(200, 220, 255, 0.55)', offset: 0 },
@@ -156,7 +154,9 @@ const ScrollTraceCanvas = () => {
 
       const points = tracePoints.map(p => ({ x: p.x * width, y: p.y * height }));
       const totalSegs = points.length - 1;
-      const visible = Math.min(progress * 1.2, 1);
+      
+      // Map progress to drawing the full path
+      const visible = Math.max(0, Math.min(1, progress * 1.5)); // Draw slightly ahead
       const segPos = visible * totalSegs;
       const fullSegs = Math.floor(segPos);
       const partialT = segPos - fullSegs;
@@ -215,7 +215,6 @@ const ScrollTraceCanvas = () => {
     };
   }, []); 
 
-  // Fixed: z-index is now -1 to be BEHIND everything
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[-1] opacity-80 mix-blend-multiply" />;
 };
 
@@ -232,17 +231,12 @@ const WordCloud = () => {
     let width = 0;
     let height = 0;
     
-    // Cloud state
     let particles = words.map(() => ({ x: 0, y: 0, z: 0, word: '' }));
     let rotX = 0;
     let rotY = 0;
     
     const initParticles = () => {
-      // Logic adjustment: Fill width better
-      // We determine a base radius, but we allow X to spread more if the container is wide
       const baseRadius = Math.min(width, height) * 0.35;
-      
-      // If the container is significantly wider than tall, slightly expand X
       const aspectRatio = width / height;
       const xSpread = aspectRatio > 1.2 ? 1.3 : 1.0; 
 
@@ -251,7 +245,6 @@ const WordCloud = () => {
         const phi = Math.acos(Math.random() * 2 - 1);
         return {
           word,
-          // Apply multiplier to X to fix "compression"
           x: (baseRadius * Math.sin(phi) * Math.cos(theta)) * xSpread,
           y: baseRadius * Math.sin(phi) * Math.sin(theta),
           z: baseRadius * Math.cos(phi)
@@ -261,17 +254,11 @@ const WordCloud = () => {
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      // Use parent size for reference
       width = canvas.parentElement?.clientWidth || 300;
       height = canvas.parentElement?.clientHeight || 400;
-      
-      // Set intrinsic size
       canvas.width = width * dpr;
       canvas.height = height * dpr;
-      
-      // Normalize coordinate system
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      
       initParticles();
     };
 
@@ -308,7 +295,6 @@ const WordCloud = () => {
       const sorted = particles.map(p => rotatePoint(p, rotX, rotY)).sort((a, b) => a.z - b.z);
 
       sorted.forEach(p => {
-        // Perspective projection
         const scale = 600 / (600 + p.z);
         const alpha = 0.3 + scale * 0.6;
         const fontSize = 14 + scale * 8;
@@ -329,7 +315,6 @@ const WordCloud = () => {
     resize();
     window.addEventListener('resize', resize);
     
-    // Interaction handlers
     const onDown = (e: MouseEvent | TouchEvent) => {
       isDragging = true;
       const c = 'touches' in e ? e.touches[0] : e;
@@ -401,14 +386,12 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClos
   return (
     <div 
       className={cn(
-        "min-h-screen font-sans text-[#2d1c0d] overflow-x-hidden selection:bg-orange-200 selection:text-orange-900 relative",
+        "min-h-screen font-sans text-[#2d1c0d] overflow-x-hidden selection:bg-orange-200 selection:text-orange-900 relative isolate",
         isRtl ? "rtl" : "ltr"
       )}
       dir={isRtl ? "rtl" : "ltr"}
       style={{
         background: 'linear-gradient(135deg, #fff7e8 0%, #ffe8c7 50%, #fff4d9 100%)',
-        // Ensure isolation to prevent z-index leaks, though we handle z-index explicitly
-        isolation: 'isolate' 
       }}
     >
       {/* Background Blobs - z-index -2 */}
@@ -467,7 +450,7 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClos
         </div>
       </header>
 
-      {/* Main Content - z-index 10 (Implicit via stacking context or just above -1) */}
+      {/* Main Content - z-index 10 */}
       <main className="max-w-6xl mx-auto px-6 pt-32 pb-20 relative z-10">
         
         {/* HERO SECTION */}
@@ -489,9 +472,9 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClos
             </motion.div>
           </FadeIn>
 
-          <FadeIn delay={0.2} className="h-[50vh] lg:h-[600px] w-full relative">
-            {/* Visual Container */}
-            <div className="w-full h-full rounded-3xl border border-white/20 shadow-2xl bg-gradient-to-br from-cyan-50/20 to-white/10 backdrop-blur-sm relative overflow-hidden group">
+          <FadeIn delay={0.2} className="h-[50vh] lg:h-[600px] w-full relative z-30">
+            {/* Visual Container - Strictly opaque enough or z-indexed to sit OVER the line */}
+            <div className="w-full h-full rounded-3xl border border-white/20 shadow-2xl bg-gradient-to-br from-cyan-50/20 to-white/10 backdrop-blur-md relative overflow-hidden group z-30">
               {/* Glowing orbs inside visual */}
               <div className="absolute top-[20%] left-[20%] w-32 h-32 bg-cyan-200/40 rounded-full blur-2xl animate-pulse" />
               <div className="absolute bottom-[20%] right-[20%] w-40 h-40 bg-orange-200/30 rounded-full blur-2xl animate-pulse delay-700" />
@@ -565,7 +548,7 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClos
                   <img 
                     src="https://lh3.googleusercontent.com/d/1zIWiopYxC_J4r-Ns4VmFvCXaLPZFmK4k=s2000?authuser=0" 
                     alt={t.bioName} 
-                    className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-500" 
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
                   />
                </div>
             </FadeIn>
