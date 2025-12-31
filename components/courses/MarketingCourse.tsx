@@ -1,8 +1,13 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-motion';
-import { ChevronDown, ArrowRight, Video, Globe } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import { ChevronDown, ArrowRight } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+
+// --- Interface for Props ---
+export interface CoursePageProps {
+  currentLang: 'he' | 'en';
+}
 
 // --- Utilities ---
 function cn(...inputs: ClassValue[]) {
@@ -94,7 +99,6 @@ const words = [
 const ScrollTraceCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { scrollYProgress } = useScroll();
-  // Smooth out the scroll value
   const smoothScroll = useSpring(scrollYProgress, { stiffness: 50, damping: 15, mass: 0.5 });
   
   useEffect(() => {
@@ -103,7 +107,6 @@ const ScrollTraceCanvas = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Generate random path points once
     const generatePoints = () => {
       const segments = 9;
       const pts = [];
@@ -111,7 +114,6 @@ const ScrollTraceCanvas = () => {
         const t = i / (segments - 1);
         let y = t + (Math.random() - 0.5) * 0.08;
         y = Math.min(1, Math.max(0, y));
-        // Snake bias
         const bias = i % 2 === 0 ? 0.75 : 0.25;
         let x = bias + (Math.random() - 0.5) * 0.25;
         x = Math.min(0.95, Math.max(0.05, x));
@@ -127,7 +129,7 @@ const ScrollTraceCanvas = () => {
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       width = window.innerWidth;
-      height = window.innerHeight * 1.5; // taller than viewport
+      height = window.innerHeight * 1.5; 
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvas.style.width = '100%';
@@ -139,7 +141,6 @@ const ScrollTraceCanvas = () => {
       ctx.clearRect(0, 0, width, height);
       const progress = smoothScroll.get();
       
-      // Pastel paths config
       const paths = [
         { color: 'rgba(255, 200, 210, 0.6)', offset: -25 },
         { color: 'rgba(200, 220, 255, 0.55)', offset: 0 },
@@ -174,7 +175,6 @@ const ScrollTraceCanvas = () => {
           const dy = p1.y - p0.y;
           const dist = Math.sqrt(dx*dx + dy*dy) || 1;
           
-          // Slight wave
           const wave = Math.sin((i/totalSegs)*Math.PI*2 + idx) * dist * 0.1;
           const perpX = -dy/dist * wave;
           const perpY = dx/dist * wave;
@@ -187,7 +187,6 @@ const ScrollTraceCanvas = () => {
           if (i < fullSegs) {
             ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1.x + pConf.offset, p1.y);
           } else {
-             // Partial segment logic simplified for React perf
              const qx = p0.x + dx * partialT;
              const qy = p0.y + dy * partialT;
              ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, qx + pConf.offset, qy);
@@ -207,7 +206,7 @@ const ScrollTraceCanvas = () => {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animId);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); 
 
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-80 mix-blend-multiply" />;
 };
@@ -225,7 +224,6 @@ const WordCloud = () => {
     let width = canvas.offsetWidth;
     let height = canvas.offsetHeight;
     
-    // Cloud state
     let particles = words.map(() => ({ x: 0, y: 0, z: 0, word: '' }));
     let rotX = 0;
     let rotY = 0;
@@ -275,18 +273,15 @@ const WordCloud = () => {
     const loop = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Auto rotation + momentum
       if (!isDragging) {
         rotY += momentum.y;
         rotX += momentum.x;
-        momentum.x *= 0.98; // friction
+        momentum.x *= 0.98; 
         momentum.y *= 0.98;
-        // base speed
         rotY += 0.002; 
         rotX += 0.001;
       }
 
-      // Sort by Z for depth
       const sorted = particles.map(p => rotatePoint(p, rotX, rotY)).sort((a, b) => a.z - b.z);
 
       sorted.forEach(p => {
@@ -310,7 +305,6 @@ const WordCloud = () => {
     resize();
     window.addEventListener('resize', resize);
     
-    // Interactions
     const onDown = (e: MouseEvent | TouchEvent) => {
       isDragging = true;
       const c = 'touches' in e ? e.touches[0] : e;
@@ -369,8 +363,14 @@ const Pill = ({ children }: { children: React.ReactNode }) => (
 );
 
 // --- Main Component ---
-export const MultimodalWorkshop = () => {
-  const [lang, setLang] = useState<'en' | 'he'>('he');
+export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang }) => {
+  const [lang, setLang] = useState<'en' | 'he'>(currentLang || 'he');
+  
+  // Sync prop changes to state (optional, if CourseModal changes it)
+  useEffect(() => {
+    if (currentLang) setLang(currentLang);
+  }, [currentLang]);
+
   const t = translations[lang];
   const isRtl = lang === 'he';
 
