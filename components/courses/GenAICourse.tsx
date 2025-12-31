@@ -1,6 +1,5 @@
-// components/courses/GenAICourse.tsx
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import { Sparkles, ArrowRight, X, Brain, Wand2, Layers, Zap } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -28,7 +27,7 @@ const translations = {
     modulesTitle: 'Taming the Machine',
     modules: [
       { icon: Brain, title: 'The LLM Mindset', body: 'Understanding how models think. Advanced prompt engineering, context windows, and dialogue strategy.' },
-      { icon: Wand2, title: 'Visual Alchemy', body: 'generative tools mastery. Composition, lighting, styling, and consistent character generation.' },
+      { icon: Wand2, title: 'Visual Alchemy', body: 'Generative tools mastery. Composition, lighting, styling, and consistent character generation.' },
       { icon: Layers, title: 'Motion & Video', body: 'Bringing statics to life. Runway, Pika, and the emerging workflow of AI cinematography.' },
       { icon: Zap, title: 'The Synthesis', body: 'Combining tools. Text-to-Image-to-Video-to-Sound. Building complete multimedia assets.' },
     ],
@@ -50,7 +49,7 @@ const translations = {
     modulesTitle: 'לאלף את המכונה',
     modules: [
       { icon: Brain, title: 'תודעת ה-LLM', body: 'להבין איך המודל חושב. הנדסת פרומפטים מתקדמת, חלונות הקשר ואסטרטגיית דיאלוג.' },
-      { icon: Wand2, title: 'אלכימיה חזותית', body: 'שליטה ב-כלים ג'נרטיביים. קומפוזיציה, תאורה, סגנון ושמירה על עקביות דמויות.' },
+      { icon: Wand2, title: 'אלכימיה חזותית', body: 'שליטה בכלים ג׳נרטיביים. קומפוזיציה, תאורה, סגנון ושמירה על עקביות דמויות.' },
       { icon: Layers, title: 'תנועה ווידאו', body: 'להפיח חיים בסטילס. Runway, Pika, וזרימת העבודה החדשה של סינמטוגרפיה מבוססת AI.' },
       { icon: Zap, title: 'הסינתזה', body: 'שילוב כלים. מטקסט לתמונה, לווידאו, לסאונד. בניית נכסים מולטימדיה שלמים.' },
     ],
@@ -109,11 +108,6 @@ const NeuralTraceCanvas = ({ containerRef }: { containerRef: React.RefObject<HTM
       const progress = smoothScroll.get();
 
       // We interpret scroll progress as "how deep into the network we are"
-      // We scale the network so it scrolls WITH the content roughly
-      // But purely for visual effect, let's keep nodes fixed relative to viewport 
-      // and light them up based on scroll, OR have them scroll up.
-      // Let's have them Fixed, but "activate" sequence based on scroll.
-
       const activeIndex = Math.floor(progress * nodes.length * 1.2); 
 
       // Draw connections first
@@ -219,8 +213,12 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
       <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-white/70 backdrop-blur-md border-b border-indigo-100">
         <div className="flex items-center gap-4">
           {onClose && (
-             <button onClick={onClose} className="p-2 rounded-full hover:bg-black/5 transition-colors text-slate-700">
-               <X className="w-6 h-6" />
+             <button 
+               onClick={onClose} 
+               className="p-2 rounded-full hover:bg-black/5 transition-colors text-slate-700"
+               aria-label={t.close}
+             >
+               <X className="w-5 h-5" />
              </button>
           )}
           <div className="flex items-center gap-2 text-indigo-900">
@@ -254,11 +252,16 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
         {/* INTRO */}
         <section className="mb-32 grid md:grid-cols-2 gap-12 items-center">
             <FadeIn>
-                <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700">
-                     <video autoPlay muted loop playsInline 
+                <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700 bg-black">
+                     <video 
                         src="https://github.com/AvocadoHead/Eyal-Izenman-2026/raw/main/Assets/Puzzlement.mp4" 
-                        className="w-full h-full object-cover"
-                    ></video>                    <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/60 to-transparent" />
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="w-full h-full object-cover opacity-90"
+                     />
+                     <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/40 to-transparent pointer-events-none" />
                 </div>
             </FadeIn>
             <FadeIn delay={0.2}>
