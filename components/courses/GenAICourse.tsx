@@ -34,6 +34,10 @@ const translations = {
     audienceLabel: 'Who is this for?',
     audienceTitle: 'For Visionaries',
     audienceBody: 'Designed for beginners ready to dive deep, and intermediate creators looking to professionalize their workflow. Perfect for 1:1 mentorship or small creative teams.',
+    bioLabel: 'About me',
+    bioName: 'Eyal Izenman',
+    bioBody: 'Creator, animator, motion designer, and thought leader in the Generative AI space. With decades of weaving music, design and movement, Eyal works where human intuition meets algorithmic improvisation.',
+    bioQuote: '“AI is not a tech trick – it is a full creative space. My goal is to help you surface the idea, refine it, and turn it into a complete visual asset – in one continuous breath.”',
     cta: 'Start your Journey',
   },
   he: {
@@ -56,6 +60,10 @@ const translations = {
     audienceLabel: 'למי זה מתאים?',
     audienceTitle: 'לאנשי חזון',
     audienceBody: 'מיועד למתחילים שרוצים לצלול לעומק, וליוצרים בינוניים שרוצים למקצע את תהליך העבודה. מושלם לליווי 1:1 או צוותים קריאייטיביים קטנים.',
+    bioLabel: 'עליי',
+    bioName: 'איל איזנמן',
+    bioBody: 'יוצר, מנפיש ומעצב תנועה, מהקולות הבולטים בישראל בשדה ה-AI היצירתי. שוזר יחד מוזיקה, עיצוב ותנועה למרחבים גנרטיביים.',
+    bioQuote: '״AI הוא לא טריק טכנולוגי – הוא מרחב יצירתי שלם. המטרה שלי היא לעזור לך לזקק את הרעיון ולהפוך אותו לנכס חזותי שלם, בנשימה אחת רציפה.״',
     cta: 'בואו נדבר על הקורס',
   }
 };
@@ -169,15 +177,22 @@ const NeuralTraceCanvas = ({ containerRef }: { containerRef: React.RefObject<HTM
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[-1]" />;
 };
 
-const FadeIn = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => (
+const FadeIn = ({ children, delay = 0, className }: { children: React.ReactNode, delay?: number, className?: string }) => (
   <motion.div
     initial={{ opacity: 0, y: 30 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-100px" }}
     transition={{ duration: 0.6, delay, ease: "easeOut" }}
+    className={className}
   >
     {children}
   </motion.div>
+);
+
+const Pill = ({ children }: { children: React.ReactNode }) => (
+  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-100/50 border border-purple-300/40 text-purple-900 uppercase tracking-widest text-xs font-medium mb-4">
+    {children}
+  </div>
 );
 
 export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose }) => {
@@ -214,9 +229,9 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
         <div className="flex items-center gap-4">
           {onClose && (
              <button 
-                onClick={onClose} 
-                className="p-2 rounded-full hover:bg-black/5 transition-colors text-slate-700"
-                aria-label={t.close}
+               onClick={onClose} 
+               className="p-2 rounded-full hover:bg-black/5 transition-colors text-slate-700"
+               aria-label={t.close}
              >
                <X className="w-5 h-5" />
              </button>
@@ -243,7 +258,7 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
             <h1 className="text-5xl md:text-8xl font-black mb-8 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 pb-2">
               {t.heroTitle}
             </h1>
-            <p className="text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto leading-relaxed bg-white/40 backdrop-blur-sm p-4 rounded-xl">
               {t.heroSubtitle}
             </p>
           </FadeIn>
@@ -264,7 +279,7 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
                      <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/40 to-transparent pointer-events-none" />
                 </div>
             </FadeIn>
-            <FadeIn delay={0.2}>
+            <FadeIn delay={0.2} className="bg-white/50 backdrop-blur-md p-8 rounded-2xl border border-white/50">
                 <h2 className="text-3xl font-bold mb-6 text-slate-800">{t.introTitle}</h2>
                 <p className="text-lg text-slate-600 leading-relaxed border-l-4 border-indigo-400 pl-6">
                     {t.introBody}
@@ -284,7 +299,7 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
             <div className="grid md:grid-cols-2 gap-6">
                 {t.modules.map((mod, i) => (
                     <FadeIn key={i} delay={i * 0.1}>
-                        <div className="group p-8 bg-white/60 backdrop-blur-sm rounded-2xl border border-white shadow-lg hover:shadow-xl hover:bg-white/90 transition-all duration-300">
+                        <div className="group p-8 bg-white/60 backdrop-blur-sm rounded-2xl border border-white shadow-lg hover:shadow-xl hover:bg-white/90 transition-all duration-300 hover:-translate-y-1">
                             <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 mb-6 group-hover:scale-110 transition-transform">
                                 <mod.icon size={24} />
                             </div>
@@ -296,22 +311,48 @@ export const GenAICourse: React.FC<CoursePageProps> = ({ currentLang, onClose })
             </div>
         </section>
 
-        {/* AUDIENCE & CTA */}
-        <section className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-12 text-center text-white relative overflow-hidden">
+        {/* AUDIENCE */}
+        <section className="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-3xl p-12 text-center text-white relative overflow-hidden mb-20 shadow-2xl">
             <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             <FadeIn>
                 <h2 className="text-3xl font-bold mb-4">{t.audienceTitle}</h2>
-                <p className="text-indigo-200 text-lg max-w-2xl mx-auto mb-10">{t.audienceBody}</p>
-                <a 
-                  href="https://api.whatsapp.com/send/?phone=97236030603"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-3 bg-white text-indigo-900 px-8 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform"
-                >
-                    {t.cta}
-                    {isRtl ? <ArrowRight className="rotate-180" /> : <ArrowRight />}
-                </a>
+                <p className="text-indigo-200 text-lg max-w-2xl mx-auto">{t.audienceBody}</p>
             </FadeIn>
+        </section>
+
+        {/* BIO & FOOTER */}
+        <section className="bg-white/60 rounded-3xl p-8 md:p-12 border border-purple-100 backdrop-blur-xl shadow-lg mb-20">
+          <div className="grid md:grid-cols-[auto_1fr] gap-8 items-start mb-16">
+            <FadeIn>
+               <div className="w-32 h-44 md:w-40 md:h-56 rounded-2xl overflow-hidden bg-purple-200 shadow-xl rotate-[-2deg] border-4 border-white">
+                  <img 
+                    src="https://lh3.googleusercontent.com/d/1zIWiopYxC_J4r-Ns4VmFvCXaLPZFmK4k=s2000?authuser=0" 
+                    alt={t.bioName} 
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
+                  />
+               </div>
+            </FadeIn>
+            <FadeIn delay={0.2}>
+              <Pill>{t.bioLabel}</Pill>
+              <h2 className="text-3xl font-bold mb-4 text-slate-900">{t.bioName}</h2>
+              <p className="text-lg text-slate-600 mb-6 leading-relaxed">{t.bioBody}</p>
+              <div className="pl-6 border-l-4 border-purple-500 bg-purple-50/50 p-4 rounded-r-xl italic text-slate-700">
+                {t.bioQuote}
+              </div>
+            </FadeIn>
+          </div>
+
+          <FadeIn className="text-center pt-8 border-t border-purple-200">
+            <a 
+              href="https://api.whatsapp.com/send/?phone=97236030603"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-3 bg-white text-indigo-900 px-8 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform border border-indigo-100 shadow-xl"
+            >
+                {t.cta}
+                {isRtl ? <ArrowRight className="rotate-180" /> : <ArrowRight />}
+            </a>
+          </FadeIn>
         </section>
 
       </main>
