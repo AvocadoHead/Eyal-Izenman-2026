@@ -229,4 +229,74 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang }) => {
               </h3>
               <p className="text-lg md:text-xl leading-relaxed" style={{ color: theme.muted }}>
                 {isHe
-                  ? 'תהליך עבודה שניתן לשחזר על בריפים שונים וכל
+                  ? ' לשחזר על בריפים שונים וכלים משתנים, בלי להתחיל מאפס בכל פעם שיוצאת פלטפורמה חדשה.'
+                  : 'A repeatable workflow you can apply across briefs and tools without starting from scratch whenever a new platform appears.'}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-xl md:text-2xl font-bold mb-2">
+                {isHe ? 'פרויקט חי בתהליך' : 'A live project in motion'}
+              </h3>
+              <p className="text-lg md:text-xl leading-relaxed" style={{ color: theme.muted }}>
+                {isHe
+                  ? 'קונספט, סקיצה או וידאו כמעט סופי – שנבנים על בסיס חומר שלכם או בריף משותף שעובדים עליו בסדנה.'
+                  : 'A concept, sketch, or near-final video built from your own material or a shared workshop brief.'}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-xl md:text-2xl font-bold mb-2">
+                {isHe ? 'שפה משותפת לצוות' : 'A shared team language'}
+              </h3>
+              <p className="text-lg md:text-xl leading-relaxed" style={{ color: theme.muted }}>
+                {isHe
+                  ? 'שפה שמחברת בין אסטרטגיה, קופי, עיצוב ותנועה – כך שהתהליך הופך זורם יותר ופחות מפוצל.'
+                  : 'A language that connects strategy, copy, design, and motion so the process becomes more fluid and less fragmented.'}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ABOUT + CTA */}
+        <section className="py-16 border-t flex flex-col md:flex-row items-center gap-10"
+          style={{ borderColor: `${theme.accent}30` }}
+        >
+          <img
+            src="https://lh3.googleusercontent.com/d/1zIWiopYxC_J4r-Ns4VmFvCXaLPZFmK4k=s400?authuser=0"
+            alt="Eyal Izenman"
+            className="w-32 h-40 object-cover rounded-2xl rotate-[-3deg] border-4 border-white shadow-xl"
+          />
+          <div className="text-center md:text-left">
+            <h3 className="text-2xl font-bold mb-2">Eyal Izenman</h3>
+            <p className="text-lg mb-2" style={{ color: theme.muted }}>
+              {isHe
+                ? 'יוצר, מנפיש ומעצב תנועה, מהקולות הבולטים בישראל בשדה ה-AI היצירתי.'
+                : 'Creator, animator, and motion designer, one of Israel\'s leading voices in creative AI.'}
+            </p>
+            <p className="italic mb-6" style={{ color: theme.muted }}>
+              {isHe
+                ? '״AI הוא לא טריק טכנולוגי – הוא מרחב יצירתי שלם.״'
+                : '"AI is not a technological trick – it is an entire creative space."'}
+            </p>
+            <p className="text-sm mb-6" style={{ color: theme.muted }}>
+              {isHe
+                ? 'הצינור המלא: בריף ← DNA של סיפור ← שפה וסגנון ← מוטציות ← ליטוש ← מוּדבורד ← לוק & פיל ← סטוריבורד ← וידאו.'
+                : 'The full pipeline: brief ← story DNA ← language & style ← mutations ← polish ← moodboard ← look & feel ← storyboard ← video.'}
+            </p>
+            <a
+              href="https://api.whatsapp.com/send/?phone=97236030603&text&type=phone_number&app_absent=0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl text-white font-bold text-lg shadow-xl hover:scale-105 transition-all"
+              style={{ backgroundColor: theme.accent }}
+            >
+              {isHe ? 'דברו איתי על הסדנה' : 'Talk to me about the workshop'}
+              <ArrowRight className="w-5 h-5" />
+            </a>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+};
