@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
-import { ChevronDown, ArrowRight } from 'lucide-react';
+import { ChevronDown, ArrowRight, X } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 // --- Interface for Props ---
 export interface CoursePageProps {
   currentLang: 'he' | 'en';
+  onClose?: () => void;
 }
 
 // --- Utilities ---
@@ -18,6 +19,7 @@ function cn(...inputs: ClassValue[]) {
 const translations = {
   en: {
     brand: 'Crack the Brief | Multimodal Workshop',
+    close: 'Close',
     heroLabel: 'What Now',
     heroTitle: 'Everything happens at once.',
     heroSubtitle: 'Cracking the brief in the multimodal space. A deep-dive workshop in strategy, creative, and visual development in the age of Generative AI.',
@@ -51,6 +53,7 @@ const translations = {
   },
   he: {
     brand: 'לפצח את הבריף | סדנה לעבודה מולטימודלית',
+    close: 'סגור',
     heroLabel: 'מה עכשיו',
     heroTitle: 'הכל קורה בבת אחת.',
     heroSubtitle: 'סדנה מעמיקה בפיצוח בריפים במרחב המולטימודלי – אסטרטגיה, קריאייטיב ופיתוח חזותי בעידן ה-AI הגנרטיבי.',
@@ -107,6 +110,7 @@ const ScrollTraceCanvas = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Generate path points
     const generatePoints = () => {
       const segments = 9;
       const pts = [];
@@ -114,6 +118,7 @@ const ScrollTraceCanvas = () => {
         const t = i / (segments - 1);
         let y = t + (Math.random() - 0.5) * 0.08;
         y = Math.min(1, Math.max(0, y));
+        // Snake bias
         const bias = i % 2 === 0 ? 0.75 : 0.25;
         let x = bias + (Math.random() - 0.5) * 0.25;
         x = Math.min(0.95, Math.max(0.05, x));
@@ -129,9 +134,10 @@ const ScrollTraceCanvas = () => {
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       width = window.innerWidth;
-      height = window.innerHeight * 1.5; 
+      height = window.innerHeight * 1.5; // taller than viewport
       canvas.width = width * dpr;
       canvas.height = height * dpr;
+      // Important: Ensure canvas style is full width/height
       canvas.style.width = '100%';
       canvas.style.height = '100%';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -141,6 +147,7 @@ const ScrollTraceCanvas = () => {
       ctx.clearRect(0, 0, width, height);
       const progress = smoothScroll.get();
       
+      // Pastel paths config
       const paths = [
         { color: 'rgba(255, 200, 210, 0.6)', offset: -25 },
         { color: 'rgba(200, 220, 255, 0.55)', offset: 0 },
@@ -208,7 +215,8 @@ const ScrollTraceCanvas = () => {
     };
   }, []); 
 
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-80 mix-blend-multiply" />;
+  // Fixed: z-index is now -1 to be BEHIND everything
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[-1] opacity-80 mix-blend-multiply" />;
 };
 
 /** 3D Word Cloud (Canvas) */
@@ -221,34 +229,49 @@ const WordCloud = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let width = canvas.offsetWidth;
-    let height = canvas.offsetHeight;
+    let width = 0;
+    let height = 0;
     
+    // Cloud state
     let particles = words.map(() => ({ x: 0, y: 0, z: 0, word: '' }));
     let rotX = 0;
     let rotY = 0;
     
     const initParticles = () => {
-      const radius = Math.min(width, height) * 0.35;
+      // Logic adjustment: Fill width better
+      // We determine a base radius, but we allow X to spread more if the container is wide
+      const baseRadius = Math.min(width, height) * 0.35;
+      
+      // If the container is significantly wider than tall, slightly expand X
+      const aspectRatio = width / height;
+      const xSpread = aspectRatio > 1.2 ? 1.3 : 1.0; 
+
       particles = words.map(word => {
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
         return {
           word,
-          x: radius * Math.sin(phi) * Math.cos(theta),
-          y: radius * Math.sin(phi) * Math.sin(theta),
-          z: radius * Math.cos(phi)
+          // Apply multiplier to X to fix "compression"
+          x: (baseRadius * Math.sin(phi) * Math.cos(theta)) * xSpread,
+          y: baseRadius * Math.sin(phi) * Math.sin(theta),
+          z: baseRadius * Math.cos(phi)
         };
       });
     };
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
+      // Use parent size for reference
       width = canvas.parentElement?.clientWidth || 300;
       height = canvas.parentElement?.clientHeight || 400;
+      
+      // Set intrinsic size
       canvas.width = width * dpr;
       canvas.height = height * dpr;
+      
+      // Normalize coordinate system
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      
       initParticles();
     };
 
@@ -285,12 +308,13 @@ const WordCloud = () => {
       const sorted = particles.map(p => rotatePoint(p, rotX, rotY)).sort((a, b) => a.z - b.z);
 
       sorted.forEach(p => {
+        // Perspective projection
         const scale = 600 / (600 + p.z);
         const alpha = 0.3 + scale * 0.6;
         const fontSize = 14 + scale * 8;
         
         ctx.save();
-        ctx.globalAlpha = alpha;
+        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
         ctx.font = `${fontSize}px Heebo, sans-serif`;
         ctx.fillStyle = '#5a3418';
         ctx.textAlign = 'center';
@@ -305,6 +329,7 @@ const WordCloud = () => {
     resize();
     window.addEventListener('resize', resize);
     
+    // Interaction handlers
     const onDown = (e: MouseEvent | TouchEvent) => {
       isDragging = true;
       const c = 'touches' in e ? e.touches[0] : e;
@@ -339,7 +364,7 @@ const WordCloud = () => {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="w-full h-full cursor-grab active:cursor-grabbing" />;
+  return <canvas ref={canvasRef} className="w-full h-full cursor-grab active:cursor-grabbing" style={{ width: '100%', height: '100%' }} />;
 };
 
 /** Animated Section Wrapper */
@@ -363,10 +388,9 @@ const Pill = ({ children }: { children: React.ReactNode }) => (
 );
 
 // --- Main Component ---
-export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang }) => {
+export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang, onClose }) => {
   const [lang, setLang] = useState<'en' | 'he'>(currentLang || 'he');
   
-  // Sync prop changes to state (optional, if CourseModal changes it)
   useEffect(() => {
     if (currentLang) setLang(currentLang);
   }, [currentLang]);
@@ -377,16 +401,18 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang }) => {
   return (
     <div 
       className={cn(
-        "min-h-screen font-sans text-[#2d1c0d] overflow-x-hidden selection:bg-orange-200 selection:text-orange-900",
+        "min-h-screen font-sans text-[#2d1c0d] overflow-x-hidden selection:bg-orange-200 selection:text-orange-900 relative",
         isRtl ? "rtl" : "ltr"
       )}
       dir={isRtl ? "rtl" : "ltr"}
       style={{
-        background: 'linear-gradient(135deg, #fff7e8 0%, #ffe8c7 50%, #fff4d9 100%)'
+        background: 'linear-gradient(135deg, #fff7e8 0%, #ffe8c7 50%, #fff4d9 100%)',
+        // Ensure isolation to prevent z-index leaks, though we handle z-index explicitly
+        isolation: 'isolate' 
       }}
     >
-      {/* Background Blobs (Amorphous Shapes) */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
+      {/* Background Blobs - z-index -2 */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-[-2]">
         <motion.div 
           animate={{ x: [0, -30, 0], y: [0, 40, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
@@ -399,17 +425,30 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang }) => {
         />
       </div>
 
+      {/* Scroll Trace - z-index -1 */}
       <ScrollTraceCanvas />
 
-      {/* Header */}
+      {/* Header - z-index 50 */}
       <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 py-4 bg-[#fff7e8]/80 backdrop-blur-md border-b border-orange-200/30">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg overflow-hidden bg-black/10 relative">
-             <video src="https://assets.codepen.io/t-1/optopia-eye.mp4" autoPlay muted loop playsInline className="w-full h-full object-cover" /> 
-             {/* Fallback visual if video fails */}
-             <div className="absolute inset-0 bg-gradient-to-tr from-orange-400 to-rose-400 opacity-50 mix-blend-overlay" />
+        <div className="flex items-center gap-4">
+          {onClose && (
+             <button 
+               onClick={onClose} 
+               className="p-2 rounded-full hover:bg-black/5 transition-colors text-stone-700"
+               aria-label={t.close}
+             >
+               <X className="w-5 h-5" />
+             </button>
+          )}
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg overflow-hidden bg-black/10 relative">
+               <video src="https://assets.codepen.io/t-1/optopia-eye.mp4" autoPlay muted loop playsInline className="w-full h-full object-cover" /> 
+               {/* Fallback visual if video fails */}
+               <div className="absolute inset-0 bg-gradient-to-tr from-orange-400 to-rose-400 opacity-50 mix-blend-overlay" />
+            </div>
+            <span className="font-bold text-sm tracking-wide uppercase hidden sm:block">{t.brand}</span>
           </div>
-          <span className="font-bold text-sm tracking-wide uppercase hidden sm:block">{t.brand}</span>
         </div>
 
         <div className="flex items-center p-1 rounded-full bg-white/50 border border-orange-200/40 shadow-sm backdrop-blur-sm">
@@ -428,6 +467,7 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang }) => {
         </div>
       </header>
 
+      {/* Main Content - z-index 10 (Implicit via stacking context or just above -1) */}
       <main className="max-w-6xl mx-auto px-6 pt-32 pb-20 relative z-10">
         
         {/* HERO SECTION */}
@@ -521,9 +561,12 @@ export const MarketingCourse: React.FC<CoursePageProps> = ({ currentLang }) => {
         <section className="bg-white/40 rounded-3xl p-8 md:p-12 border border-white/50 backdrop-blur-lg">
           <div className="grid md:grid-cols-[auto_1fr] gap-8 items-start mb-16">
             <FadeIn>
-               {/* Placeholder for Eyal's Image */}
                <div className="w-32 h-44 md:w-40 md:h-56 rounded-2xl overflow-hidden bg-stone-200 shadow-xl rotate-[-2deg] border-4 border-white">
-                  <img src="https://assets.codepen.io/t-1/eyal.jpg" alt={t.bioName} className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-500" />
+                  <img 
+                    src="https://lh3.googleusercontent.com/d/1zIWiopYxC_J4r-Ns4VmFvCXaLPZFmK4k=s2000?authuser=0" 
+                    alt={t.bioName} 
+                    className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-500" 
+                  />
                </div>
             </FadeIn>
             <FadeIn delay={0.2}>
