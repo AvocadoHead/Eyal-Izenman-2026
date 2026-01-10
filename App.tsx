@@ -274,7 +274,12 @@ const App: React.FC = () => {
                         </React.Fragment>
                     ))}
                 </div>
-                <p className="mt-6 max-w-lg text-slate-600 leading-relaxed font-light text-xl">{t.bio}</p>
+                <p
+                  className="mt-6 max-w-lg text-slate-600 leading-relaxed font-light text-xl"
+                  style={{ whiteSpace: "pre-line" }}
+                >
+                  {t.bio}
+                </p>
             </div>
         </section>
 
