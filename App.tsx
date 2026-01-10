@@ -16,7 +16,7 @@ const CONTENT = {
   he: {
     name: 'איל איזנמן',
     roles: ['אפטריסט', 'בינאי', 'מחנך'], 
-    bio: 'סטוריטלר, סוריאליסט טכנוקרט. <br> בורא חוויות ויזואליות שמעוררות רגש בקצה הבינה המלאכותית.',
+    bio: 'סטוריטלר, סוריאליסט טכנוקרט.\nבורא חוויות ויזואליות שמעוררות רגש בקצה הבינה המלאכותית.',
     coursesTitle: 'ללמוד מהניסיון שלי',
     coursesSubtitle: 'קורסים מעשיים לשנת 2025.',
     footerRights: 'כל הזכויות שמורות',
@@ -49,7 +49,7 @@ const CONTENT = {
   en: {
     name: 'Eyal Izenman',
     roles: ['After Effects Artist', 'Generative AI Enthusiast', 'Educator'],
-    bio: 'Technocratic Surrealist Storyteller. <br> Crafting visual experiences that evoke emotion on the cutting edge of Artificial Intelligence.',
+    bio: 'Technocratic Surrealist Storyteller.\nCrafting visual experiences that evoke emotion on the cutting edge of Artificial Intelligence.',
     coursesTitle: 'Learn from Experience',
     coursesSubtitle: 'Practical courses for 2025.',
     footerRights: 'All rights reserved',
