@@ -4,8 +4,9 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
+    const base = env.VITE_BASE ?? (mode === 'production' ? '/Eyal-Izenman-2026/' : '/');
     return {
-            base: '/Eyal-Izenman-2026/',
+      base,
       server: {
         port: 3000,
         host: '0.0.0.0',

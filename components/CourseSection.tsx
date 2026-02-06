@@ -40,21 +40,22 @@ export const CourseSection: React.FC<CourseSectionProps> = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto py-8 px-4 md:px-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8" dir={textDir}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6" dir={textDir}>
         {courses.map((course) => (
           <div
             key={course.id}
             onClick={() => onSelectCourse(course)}
-            className="group relative h-[480px] md:h-[520px] cursor-pointer bg-white rounded-[1.75rem] md:rounded-[2rem] border border-slate-200/60 transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-slate-300/30 hover:border-slate-300/60 hover:-translate-y-2 overflow-hidden flex flex-col"
+            data-magnetic
+            className="group relative h-[440px] md:h-[480px] cursor-pointer bg-slate-900/50 backdrop-blur-sm rounded-2xl md:rounded-3xl border border-white/10 transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-violet-500/10 hover:border-white/20 hover:-translate-y-2 overflow-hidden flex flex-col"
           >
             {/* Outer glow effect */}
-            <div className="absolute -inset-3 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl" style={{ backgroundImage: cardGlows[course.id] }} />
+            <div className="absolute -inset-3 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl" style={{ backgroundImage: cardGlows[course.id] }} />
 
             {/* Inner border highlight */}
-            <div className="absolute inset-0 rounded-[1.75rem] md:rounded-[2rem] ring-1 ring-inset ring-white/50 pointer-events-none z-20" />
+            <div className="absolute inset-0 rounded-2xl md:rounded-3xl ring-1 ring-inset ring-white/5 pointer-events-none z-20" />
 
             {/* Gradient overlay on hover */}
-            <div className="absolute inset-0 bg-gradient-to-t from-white/60 via-transparent to-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
 
             {/* Render the specific Micro App for the card */}
             <div className="absolute inset-0">
