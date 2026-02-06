@@ -18,14 +18,14 @@ export const GenAiMicro: React.FC<GenAiMicroProps> = ({ lang, onToggleLang }) =>
   };
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-[#ecfdf5] group font-sans">
-        
+    <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-[#ecfdf5] to-[#e8fcf3] group font-sans">
+
       {/* Floating Elements (Abstract Generated Shapes) */}
-      <div className="absolute top-10 right-10 w-32 h-32 bg-[#10b981] rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float"></div>
-      <div className="absolute bottom-10 left-10 w-32 h-32 bg-[#34d399] rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float-delayed"></div>
+      <div className="absolute top-10 right-10 w-32 h-32 bg-[#10b981] rounded-full mix-blend-multiply filter blur-[50px] opacity-15 animate-float"></div>
+      <div className="absolute bottom-10 left-10 w-32 h-32 bg-[#34d399] rounded-full mix-blend-multiply filter blur-[50px] opacity-15 animate-float-delayed"></div>
 
       {/* --- Scanning Laser Line --- */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)] animate-[scanDown_4s_linear_infinite] opacity-50 z-0"></div>
+      <div className="absolute top-0 left-0 w-full h-[1.5px] bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)] animate-[scanDown_5s_linear_infinite] opacity-40 z-0"></div>
 
       <div className="relative z-10 w-full h-full flex flex-col p-8" dir={isHe ? 'rtl' : 'ltr'}>
         
@@ -57,8 +57,23 @@ export const GenAiMicro: React.FC<GenAiMicroProps> = ({ lang, onToggleLang }) =>
                 )}
             </h2>
 
+            <p className="font-sans text-sm text-[#065f46] max-w-[220px] leading-relaxed font-medium">
+                {isHe ? 'לאמנים וצוותי חדשנות שבונים שפה ג׳נרטיבית יציבה ומדידה.' : 'For teams building scalable, consistent generative visuals.'}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest font-bold">
+                <span className="px-2 py-1 rounded-full bg-white/70 border border-[#10b981]/30 text-[#064e3b] transition-transform duration-300 group-hover:-translate-y-1">
+                    {isHe ? 'מערכות' : 'Systems'}
+                </span>
+                <span className="px-2 py-1 rounded-full bg-white/70 border border-[#10b981]/30 text-[#064e3b] transition-transform duration-300 group-hover:-translate-y-1">
+                    {isHe ? 'ControlNets' : 'ControlNets'}
+                </span>
+                <span className="px-2 py-1 rounded-full bg-white/70 border border-[#10b981]/30 text-[#064e3b] transition-transform duration-300 group-hover:-translate-y-1">
+                    {isHe ? 'סדרות' : 'Series'}
+                </span>
+            </div>
+
             {/* Simulated Prompt Box */}
-            <div className="mt-4 p-3 rounded-lg bg-white/60 border border-[#10b981]/30 backdrop-blur-sm max-w-[220px] group-hover:border-[#10b981] transition-colors duration-500">
+            <div className="mt-5 p-3 rounded-lg bg-white/60 border border-[#10b981]/30 backdrop-blur-sm max-w-[220px] group-hover:border-[#10b981] transition-colors duration-500">
                 <div className="flex gap-2 items-center">
                     <div className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></div>
                     <span className="text-[10px] font-mono text-[#064e3b] opacity-70 whitespace-nowrap overflow-hidden animate-[type_3s_steps(40,end)_infinite]">
@@ -79,15 +94,15 @@ export const GenAiMicro: React.FC<GenAiMicroProps> = ({ lang, onToggleLang }) =>
 
       <style>{`
         @keyframes scanDown {
-            0% { top: -10%; opacity: 0; }
-            10% { opacity: 0.5; }
-            90% { opacity: 0.5; }
-            100% { top: 110%; opacity: 0; }
+            0% { top: -5%; opacity: 0; }
+            5% { opacity: 0.4; }
+            95% { opacity: 0.4; }
+            100% { top: 105%; opacity: 0; }
         }
         @keyframes type {
           0% { width: 0; }
-          50% { width: 100%; }
-          90% { width: 100%; }
+          45% { width: 100%; }
+          85% { width: 100%; }
           100% { width: 0; }
         }
       `}</style>

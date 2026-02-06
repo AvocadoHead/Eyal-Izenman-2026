@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Project, Course } from './types';
 import { ProjectCard } from './components/ProjectCard';
@@ -5,6 +6,7 @@ import { CourseSection } from './components/CourseSection';
 import { CourseModal } from './components/CourseModal';
 import { SitePreview } from './components/SitePreview';
 import { VideoProjectCard } from './components/VideoProjectCard';
+import { MultiVideoProjectCard } from './components/MultiVideoProjectCard';
 import { NarrativeLine } from './components/NarrativeLine';
 import { Globe, MessageCircle, Mail } from 'lucide-react';
 
@@ -15,67 +17,67 @@ type Language = 'he' | 'en';
 const CONTENT = {
   he: {
     name: 'איל איזנמן',
-    roles: ['אפטריסט', 'בינאי', 'מחנך'], 
-    bio: 'סטוריטלר, סוריאליסט טכנוקרט.\nבורא חוויות ויזואליות שמעוררות רגש בקצה הבינה המלאכותית.',
+    roles: ['Motion Artist', 'בינאי', 'Educator'], 
+    bio: 'אני מחבר בין סיפורים לטכנולוגיה. יוצר חוויות ויזואליות שמשלבות רגש אנושי עם הקצה של הבינה המלאכותית.',
     coursesTitle: 'ללמוד מהניסיון שלי',
     coursesSubtitle: 'קורסים מעשיים לשנת 2025.',
     footerRights: 'כל הזכויות שמורות',
     contact: 'צור קשר',
     projects: {
         showreel: { title: 'Showreel 2025', desc: 'Motion & Visual Effects. מסע ויזואלי בין פרויקטים נבחרים.' },
-        surreal: { title: 'Surrealness', desc: 'מחקר ויזואלי בתנועה וחלום. יצירה אבסטרקטית הבוחנת את הגבול בין המציאותי למחולל.' },
+        surreal: { title: 'Surreal Dreams', desc: 'מחקר ויזואלי בתנועה וחלום. יצירה אבסטרקטית הבוחנת את הגבול בין המציאותי למחולל.' },
         aiIndex: { title: 'AI Index', desc: 'אינדקס כלי בינה מלאכותית. מאגר חי ונושם של הכלים הכי חדשים בתעשייה.' },
         optopia: { title: 'Optopia Collective', desc: 'קהילת אמנות גנרטיבית. המקום שבו יוצרים נפגשים כדי לחקור, לשתף וליצור ביחד.' },
         aether: { title: 'Aether Gallery', desc: 'גלריה במרחב תלת-ממדי. חווית צפייה אימרסיבית בעבודות נבחרות.' }
     },
     courses: {
         marketing: { 
-            title: 'שיווק קריאייטיבי', 
+            title: 'אסטרטגיית קריאייטיב', 
             subtitle: 'פיצוח הבריף', 
-            desc: 'הפסיכולוגיה שמאחורי קמפיינים מנצחים.' 
+            desc: 'למנהלי קריאייטיב ומותגים שרוצים להפוך בריף לקונספט מנצח.' 
         },
         editing: { 
-            title: 'עריכה ופוסט', 
+            title: 'עריכה קולנועית', 
             subtitle: 'Skill over Tool', 
-            desc: 'המרחק בין After Effects ל-CapCut.' 
+            desc: 'לעורכים ויוצרי תוכן שמחפשים קצב, זרימה וסיפור בכל תוכנה.' 
         },
         genai: { 
-            title: 'יצירה ג׳נרטיבית', 
+            title: 'מערכות יצירה ג׳נרטיביות', 
             subtitle: 'לזרוע, לטפח, לגדל', 
-            desc: 'האלכימיה של היצירה מהכאוס.' 
+            desc: 'לאמנים וצוותי חדשנות שבונים שפה ויזואלית עקבית עם AI.' 
         }
     }
   },
   en: {
     name: 'Eyal Izenman',
-    roles: ['After Effects Artist', 'Generative AI Enthusiast', 'Educator'],
-    bio: 'Technocratic Surrealist Storyteller.\nCrafting visual experiences that evoke emotion on the cutting edge of Artificial Intelligence.',
+    roles: ['Motion Artist', 'Generative AI Enthusiast', 'Educator'],
+    bio: 'Bridging stories and technology. Creating visual experiences that fuse human emotion with the cutting edge of Artificial Intelligence.',
     coursesTitle: 'Learn from Experience',
     coursesSubtitle: 'Practical courses for 2025.',
     footerRights: 'All rights reserved',
     contact: 'Contact',
     projects: {
         showreel: { title: 'Showreel 2025', desc: 'Motion & Visual Effects. A visual journey through selected works.' },
-        surreal: { title: 'Surrealness', desc: 'Visual research in motion and dreams. An abstract piece exploring the boundary between real and generated.' },
+        surreal: { title: 'Surreal Dreams', desc: 'Visual research in motion and dreams. An abstract piece exploring the boundary between real and generated.' },
         aiIndex: { title: 'AI Index', desc: 'Curated AI Tools Index. A living database of the newest industry tools.' },
         optopia: { title: 'Optopia Collective', desc: 'Generative Art Community. Where creators meet to explore, share, and build together.' },
         aether: { title: 'Aether Gallery', desc: '3D Spatial Gallery. Immersive viewing experience of selected artworks.' }
     },
     courses: {
         marketing: { 
-            title: 'Creative Marketing', 
+            title: 'Creative Strategy', 
             subtitle: 'Cracking the Brief', 
-            desc: 'The psychology behind winning campaigns.' 
+            desc: 'For creative leads who turn briefs into magnetic campaigns.' 
         },
         editing: { 
-            title: 'Editing & Post', 
+            title: 'Cinematic Editing', 
             subtitle: 'Skill over Tool', 
-            desc: 'From After Effects to free tools like CapCut.' 
+            desc: 'For editors who want rhythm, flow, and story in any tool.' 
         },
         genai: { 
-            title: 'Generative Creation', 
+            title: 'Generative Systems', 
             subtitle: 'Seed, Nurture, Grow', 
-            desc: 'The alchemy of growing ideas from chaos.' 
+            desc: 'For teams building consistent visual language with AI.' 
         }
     }
   }
@@ -121,54 +123,36 @@ const App: React.FC = () => {
     }
   ];
 
-  // 🔴 YOUR SPECIFIC VIDEOS
   const currentProjects: Project[] = [
     {
       id: 'showreel',
       title: t.projects.showreel.title,
       description: t.projects.showreel.desc,
-      link: '#', 
+      link: '#',
       type: 'video',
-      component: <VideoProjectCard 
+      component: <VideoProjectCard
                     id="showreel"
                     year="2025"
                     title="Showreel"
-                    videoSources={[
-                      {
-                        previewUrl: "https://www.youtube.com/watch?v=mkjYn2cRhrI",
-                        fullUrl: "https://www.youtube.com/watch?v=mkjYn2cRhrI" 
-                      }
-                    ]}
+                    previewVideoUrl="https://www.youtube.com/embed/mkjYn2cRhrI?autoplay=1&mute=1&loop=1&playlist=mkjYn2cRhrI&controls=0&modestbranding=1&rel=0"
+                    fullVideoEmbedUrl="https://www.youtube.com/embed/mkjYn2cRhrI"
+                    fullVideoDirectUrl="https://youtube.com/shorts/mkjYn2cRhrI"
                  />
     },
     {
-      id: 'surreal',
+    id: 'surrealness',
       title: t.projects.surreal.title,
       description: t.projects.surreal.desc,
       link: '#',
       type: 'video',
-      component: <VideoProjectCard 
-                    id="surreal"
-                    year="2025"
-                    title="Surrealness"
-                    videoSources={[
-                      {
-                        previewUrl: "https://www.youtube.com/watch?v=Re2V2zprjNo",
-                        fullUrl: "https://www.youtube.com/watch?v=Re2V2zprjNo"
-                      },
-                      {
-                        previewUrl: "https://www.youtube.com/watch?v=a0RhwpbhnCA",
-                        fullUrl: "https://www.youtube.com/watch?v=a0RhwpbhnCA"
-                      },
-                      {
-                        previewUrl: "https://www.youtube.com/watch?v=3K25zquwnUE",
-                        fullUrl: "https://www.youtube.com/watch?v=3K25zquwnUE"
-                      },
-                      {
-                        previewUrl: "https://www.youtube.com/watch?v=h9MQ6L4H72o",
-                        fullUrl: "https://www.youtube.com/watch?v=h9MQ6L4H72o"
-                      }
-                    ]}
+      component: <MultiVideoProjectCard
+            year="2025"
+            videos={[
+              { id: 'Re2V2zprjNo', title: 'Surreal Dreams 1', embedUrl: 'https://www.youtube.com/embed/Re2V2zprjNo', directUrl: 'https://youtube.com/shorts/Re2V2zprjNo' },
+              { id: 'fLYQgmPzBP0', title: 'Surreal Dreams 2', embedUrl: 'https://www.youtube.com/embed/fLYQgmPzBP0', directUrl: 'https://youtube.com/shorts/fLYQgmPzBP0' },
+              { id: '4vwRzAcKvz4', title: 'Surreal Dreams 3', embedUrl: 'https://www.youtube.com/embed/4vwRzAcKvz4', directUrl: 'https://youtube.com/shorts/4vwRzAcKvz4' },
+              { id: 'rPRcQ4bYEYk', title: 'Surreal Dreams 4', embedUrl: 'https://www.youtube.com/embed/rPRcQ4bYEYk', directUrl: 'https://youtube.com/shorts/rPRcQ4bYEYk' }
+            ]}
                  />
     },
     {
@@ -197,6 +181,7 @@ const App: React.FC = () => {
     }
   ];
 
+  // Logic to handle URL parameters for deep-linking (v2: Handles GH Pages subdirs)
   useEffect(() => {
     const handleUrlChange = () => {
         const params = new URLSearchParams(window.location.search);
@@ -218,6 +203,7 @@ const App: React.FC = () => {
       setSelectedCourse(course);
       const url = new URL(window.location.href);
       url.searchParams.set('course', course.id);
+      // We use only the pathname and the new search to avoid full domain issues
       window.history.pushState({}, '', window.location.pathname + url.search);
   };
 
@@ -241,79 +227,89 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-800 relative font-sans selection:bg-rose-200 overflow-x-hidden" dir="ltr">
-      <div className="fixed inset-0 pointer-events-none opacity-[0.04] z-0" 
+    <div className="min-h-screen bg-[#fafbfc] text-slate-800 relative font-sans overflow-x-hidden" dir="ltr">
+      {/* Subtle gradient background */}
+      <div className="fixed inset-0 pointer-events-none z-0 bg-gradient-to-b from-slate-50 via-white to-slate-50/80"></div>
+
+      {/* Texture Layer - more subtle */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.025] z-0"
            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}>
       </div>
 
-      <button onClick={toggleLanguage} className="fixed top-6 right-6 md:right-auto md:left-6 z-50 bg-white/50 hover:bg-white backdrop-blur-sm border border-slate-200 p-2 rounded-full shadow-sm transition-all group flex items-center gap-2">
-        <Globe className="w-5 h-5 text-slate-600" />
-        <span className="text-[10px] font-bold font-english uppercase tracking-widest text-slate-500 w-0 overflow-hidden group-hover:w-auto group-hover:px-1 transition-all duration-300">
+      {/* Language Toggle - refined */}
+      <button onClick={toggleLanguage} className="fixed top-6 right-6 md:right-auto md:left-6 z-50 bg-white/70 hover:bg-white backdrop-blur-md border border-slate-200/80 p-2.5 rounded-full shadow-sm hover:shadow-md transition-all duration-300 group flex items-center gap-2">
+        <Globe className="w-5 h-5 text-slate-500 group-hover:text-violet-500 transition-colors" />
+        <span className="text-[10px] font-semibold font-english uppercase tracking-wider text-slate-400 w-0 overflow-hidden group-hover:w-auto group-hover:px-1 group-hover:text-violet-500 transition-all duration-300">
             {lang === 'he' ? 'EN' : 'HE'}
         </span>
       </button>
 
-      <a href="https://wa.me/97236030603" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-110 transition-all flex items-center justify-center">
+      {/* Floating Contact - refined */}
+      <a href="https://wa.me/97236030603" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 hover:scale-105 transition-all duration-300 flex items-center justify-center">
         <MessageCircle className="w-6 h-6 fill-current" />
       </a>
 
       <main className="relative z-10" ref={containerRef}>
-        <section className="pt-32 pb-40 px-6 md:px-12 flex flex-col md:flex-row items-center md:items-start justify-center gap-8 md:gap-16 relative z-20">
+        {/* Hero Section */}
+        <section className="pt-28 md:pt-36 pb-36 md:pb-44 px-6 md:px-12 flex flex-col md:flex-row items-center md:items-start justify-center gap-10 md:gap-20 relative z-20">
             <div className="relative group shrink-0">
-                <div className="w-40 h-40 md:w-56 md:h-56 rounded-full overflow-hidden border-[1px] border-slate-200 shadow-2xl relative z-10 bg-white">
-                    <img src={PROFILE_IMAGE_URL} alt="Eyal Izenman" className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-[2s]" />
+                {/* Decorative ring */}
+                <div className="absolute -inset-3 rounded-full bg-gradient-to-br from-violet-200/40 via-transparent to-indigo-200/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl"></div>
+                <div className="w-44 h-44 md:w-60 md:h-60 rounded-full overflow-hidden border border-slate-200/60 shadow-xl shadow-slate-200/50 relative z-10 bg-white ring-1 ring-white/50">
+                    <img src={PROFILE_IMAGE_URL} alt="Eyal Izenman" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000 ease-out" />
                 </div>
             </div>
-            <div className="text-center md:text-left pt-2 relative" dir={textDir}>
-                <h1 className="font-sans font-black text-6xl md:text-8xl text-slate-900 mb-1 tracking-tight leading-none">{t.name}</h1>
-                <div className={`font-english text-sm md:text-base text-slate-400 flex flex-col md:flex-row gap-1 md:gap-3 items-center ${lang === 'he' ? 'md:items-start md:flex-row-reverse' : 'md:items-start'} font-normal tracking-tighter mt-3 uppercase`}>
+            <div className="text-center md:text-left pt-2 relative max-w-xl" dir={textDir}>
+                <h1 className="font-sans font-black text-5xl md:text-7xl lg:text-8xl text-slate-900 mb-2 tracking-tight leading-[0.95]">{t.name}</h1>
+                <div className={`font-english text-xs md:text-sm text-slate-400 flex flex-col md:flex-row gap-2 md:gap-3 items-center ${lang === 'he' ? 'md:items-start md:flex-row-reverse' : 'md:items-start'} mt-4 uppercase`}>
                     {t.roles.map((role, index) => (
                         <React.Fragment key={index}>
-                            <span className="text-slate-500 font-medium tracking-widest">{role}</span>
-                            {index < t.roles.length - 1 && <span className="hidden md:inline text-slate-300 opacity-50">/</span>}
+                            <span className="text-slate-500 font-medium tracking-[0.15em]">{role}</span>
+                            {index < t.roles.length - 1 && <span className="hidden md:inline text-violet-300">•</span>}
                         </React.Fragment>
                     ))}
                 </div>
-                <p
-                  className="mt-6 max-w-lg text-slate-600 leading-relaxed font-light text-xl"
-                  style={{ whiteSpace: "pre-line" }}
-                >
-                  {t.bio}
-                </p>
+                <p className="mt-8 text-slate-600 leading-[1.75] font-normal text-lg md:text-xl tracking-wide">{t.bio}</p>
             </div>
         </section>
 
+        {/* The Generative Line / Background Animation */}
         <NarrativeLine scrollProgress={scrollProgress} />
 
-        <section className="max-w-7xl mx-auto px-6 pb-48 pt-0 relative">
-            <div className="flex flex-col w-full gap-56">
+        {/* Projects Grid */}
+        <section className="max-w-7xl mx-auto px-6 pb-40 md:pb-52 pt-0 relative">
+            <div className="flex flex-col w-full gap-32 md:gap-48">
                 {currentProjects.map((project, index) => (
                     <ProjectCard key={project.id} project={project} alignment={index % 2 === 0 ? 'right' : 'left'} textDir={textDir} />
                 ))}
             </div>
         </section>
 
-        <section className="relative pt-32 pb-32">
-             <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-[#f8fafc] via-white to-transparent z-10"></div>
-             <div className="text-center mb-24 relative z-20" dir={textDir}>
-                <h2 className="text-5xl font-black text-slate-900 mb-4 tracking-tight">{t.coursesTitle}</h2>
-                <p className="text-slate-500 font-light text-xl">{t.coursesSubtitle}</p>
+        {/* Courses Section */}
+        <section className="relative pt-28 md:pt-36 pb-28 md:pb-36">
+             <div className="absolute top-0 left-0 w-full h-56 bg-gradient-to-b from-[#fafbfc] via-white/90 to-transparent z-10"></div>
+             <div className="text-center mb-20 md:mb-28 relative z-20" dir={textDir}>
+                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-5 tracking-tight">{t.coursesTitle}</h2>
+                <p className="text-slate-500 font-normal text-lg md:text-xl tracking-wide">{t.coursesSubtitle}</p>
              </div>
              <CourseSection courses={currentCourses} onSelectCourse={handleCourseSelect} textDir={textDir} currentLang={lang} onToggleLang={toggleLanguage} />
         </section>
 
-        <footer className="py-20 bg-slate-900 text-slate-400 text-sm border-t border-slate-800">
+        {/* Footer */}
+        <footer className="py-16 md:py-20 bg-slate-900 text-slate-400 text-sm border-t border-slate-800/50">
             <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6" dir="ltr">
-                <p className="font-english opacity-60">&copy; {new Date().getFullYear()} {t.footerRights} Eyal Izenman.</p>
+                <p className="font-english text-slate-500 text-sm">&copy; {new Date().getFullYear()} {t.footerRights} Eyal Izenman.</p>
                 <div className="flex items-center gap-8">
-                    <a href="mailto:eyalizenman@gmail.com" className="hover:text-white transition-colors font-medium text-base flex items-center gap-2">
-                        <Mail className="w-4 h-4" /> eyalizenman@gmail.com
+                    <a href="mailto:eyalizenman@gmail.com" className="text-slate-400 hover:text-white transition-colors duration-300 font-medium text-base flex items-center gap-2.5 group">
+                        <Mail className="w-4 h-4 group-hover:text-violet-400 transition-colors" />
+                        <span>eyalizenman@gmail.com</span>
                     </a>
                 </div>
             </div>
         </footer>
       </main>
 
+      {/* Modals */}
       <CourseModal course={selectedCourse} onClose={handleCourseClose} textDir={textDir} currentLang={lang} onToggleLang={toggleLanguage} />
     </div>
   );

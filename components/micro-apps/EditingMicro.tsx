@@ -18,7 +18,9 @@ export const EditingMicro: React.FC<EditingMicroProps> = ({ lang, onToggleLang }
   };
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-[#fff1f2] group font-sans">
+    <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-[#fff1f2] to-[#ffeef0] group font-sans">
+      <div className="absolute -top-16 -left-16 w-48 h-48 bg-rose-300/30 rounded-full blur-[50px] animate-float"></div>
+      <div className="absolute bottom-0 right-0 w-56 h-56 bg-rose-500/15 rounded-full blur-[60px] animate-float-delayed"></div>
       
       {/* Background Grid */}
       <div className="absolute top-0 right-0 w-full h-full opacity-10" 
@@ -70,9 +72,20 @@ export const EditingMicro: React.FC<EditingMicroProps> = ({ lang, onToggleLang }
                         <>Edit<br/>& Post.</>
                     )}
                 </h2>
-                <p className="font-sans text-sm text-[#9f1239] max-w-[200px] leading-relaxed font-medium">
-                    {isHe ? 'קצב, רגש וקומפוזיטינג מתקדם.' : 'Rhythm, emotion & advanced compositing.'}
+                <p className="font-sans text-sm text-[#9f1239] max-w-[220px] leading-relaxed font-medium">
+                    {isHe ? 'לעורכים ויוצרי תוכן שרוצים קצב קולנועי גם בלי סטודיו כבד.' : 'For editors who want cinematic rhythm without heavy pipelines.'}
                 </p>
+                <div className="mt-6 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest font-bold">
+                    <span className="px-2 py-1 rounded-full bg-white/70 border border-[#f43f5e]/30 text-[#881337] transition-transform duration-300 group-hover:-translate-y-1">
+                        {isHe ? 'וידאו קצר' : 'Short-form'}
+                    </span>
+                    <span className="px-2 py-1 rounded-full bg-white/70 border border-[#f43f5e]/30 text-[#881337] transition-transform duration-300 group-hover:-translate-y-1">
+                        {isHe ? 'פרסומות' : 'Commercials'}
+                    </span>
+                    <span className="px-2 py-1 rounded-full bg-white/70 border border-[#f43f5e]/30 text-[#881337] transition-transform duration-300 group-hover:-translate-y-1">
+                        {isHe ? 'קולנועי' : 'Cinematic'}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -84,14 +97,14 @@ export const EditingMicro: React.FC<EditingMicroProps> = ({ lang, onToggleLang }
       
       <style>{`
         @keyframes scan {
-          0% { left: 0%; opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { left: 100%; opacity: 0; }
+          0% { left: -5%; opacity: 0; }
+          5% { opacity: 0.8; }
+          95% { opacity: 0.8; }
+          100% { left: 105%; opacity: 0; }
         }
         @keyframes shimmer {
           0% { transform: translateX(-100%) skewX(-12deg); }
-          100% { transform: translateX(200%) skewX(-12deg); }
+          100% { transform: translateX(250%) skewX(-12deg); }
         }
       `}</style>
     </div>

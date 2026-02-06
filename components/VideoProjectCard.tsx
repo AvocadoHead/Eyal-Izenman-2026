@@ -1,207 +1,157 @@
-import React, { useState, useEffect } from 'react';
-import { X, Monitor, ExternalLink, ChevronLeft, ChevronRight, VolumeX, Maximize2, Play, AlertCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Play, X, Volume2, VolumeX, Monitor, ExternalLink } from 'lucide-react';
 import { createPortal } from 'react-dom';
-
-export interface VideoSource {
-  previewUrl: string;
-  fullUrl: string;
-}
 
 interface VideoProjectCardProps {
   id: string;
   year: string;
   title: string;
-  videoSources: VideoSource[];
+  previewVideoUrl: string; // Direct MP4 for the card background
+  previewEmbedUrl?: string; // Optional iframe preview (YouTube)
+  fullVideoEmbedUrl: string; // The iframe URL for the modal
+  fullVideoDirectUrl: string; // Link to external site (Drive/YouTube)
 }
 
 export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
+  id,
   year,
   title,
-  videoSources
+  previewVideoUrl,
+  previewEmbedUrl,
+  fullVideoEmbedUrl,
+  fullVideoDirectUrl
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [origin, setOrigin] = useState('');
-  const [imgError, setImgError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Hardened Autoplay Logic for the Card Preview
   useEffect(() => {
-    if (typeof window !== 'undefined') setOrigin(window.location.origin);
-  }, []);
-  
-  const currentSource = videoSources[activeIndex];
-
-  // 1. Extract ID
-  const getYouTubeId = (url: string) => {
-    if (!url) return null;
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|watch\?v=))([^?&"'>]{11})/);
-    return match ? match[1] : null;
-  };
-
-  const videoId = getYouTubeId(currentSource.previewUrl);
-
-  // 2. Thumbnail Fallback (mqdefault exists for 100% of videos)
-  const thumbnailUrl = videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : '';
-
-  // 3. Embed URL
-  const getEmbedUrl = (id: string | null, isPreview: boolean) => {
-    if (!id) return '';
-    const base = `https://www.youtube.com/embed/${id}`;
-    // 'origin' fixes the "Unavailable" error on some domains
-    const settings = `origin=${origin}&iv_load_policy=3&modestbranding=1&playsinline=1&rel=0&showinfo=0`;
-    
-    if (isPreview) {
-        return `${base}?autoplay=1&mute=1&controls=0&${settings}`;
-    } else {
-        return `${base}?autoplay=1&mute=0&controls=1&${settings}`;
+    if (previewEmbedUrl) return;
+    const video = videoRef.current;
+    if (video) {
+        video.muted = !isHovered;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {
+                // Autoplay was prevented - usually fine as it's muted
+            });
+        }
     }
+  }, [isHovered]);
+
+  const toggleOpen = () => setIsOpen(!isOpen);
+
+  const buildEmbedUrl = (url: string, extraParams?: Record<string, string>) => {
+    const embedUrl = new URL(url);
+    embedUrl.searchParams.set('autoplay', '1');
+    embedUrl.searchParams.set('mute', '1');
+    embedUrl.searchParams.set('playsinline', '1');
+    if (extraParams) {
+      Object.entries(extraParams).forEach(([key, value]) => {
+        embedUrl.searchParams.set(key, value);
+      });
+    }
+    return embedUrl.toString();
   };
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation(); 
-    setIsOpen(true);
-  };
-
-  const handleModalClose = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setIsOpen(false);
-  };
-
-  const navigate = (direction: 'next' | 'prev', e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newIndex = direction === 'next' 
-      ? (activeIndex + 1) % videoSources.length
-      : (activeIndex - 1 + videoSources.length) % videoSources.length;
-    setActiveIndex(newIndex);
-    setImgError(false);
-  };
+  const embedUrlWithAutoplay = buildEmbedUrl(fullVideoEmbedUrl);
+  const previewEmbedWithAutoplay = previewEmbedUrl
+    ? buildEmbedUrl(previewEmbedUrl, { controls: '0', modestbranding: '1', rel: '0' })
+    : null;
 
   return (
     <>
-        <div 
-            onClick={handleCardClick}
+        <div
+            onClick={toggleOpen}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="w-full h-full bg-zinc-800 relative group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 shadow-lg"
+            className="w-full h-full bg-slate-900 relative group cursor-pointer overflow-hidden"
         >
-            {/* 1. BACKUP IMAGE */}
-            {thumbnailUrl && !imgError && (
-                <div 
-                    className="absolute inset-0 bg-cover bg-center z-0 scale-110 opacity-60"
-                    style={{ backgroundImage: `url(${thumbnailUrl})` }}
-                />
+            {/* Video background */}
+            {previewEmbedWithAutoplay ? (
+              <iframe
+                src={previewEmbedWithAutoplay}
+                className="w-full h-full absolute inset-0 scale-[1.02] group-hover:scale-100 transition-transform duration-1000 ease-out"
+                title={`${title} preview`}
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <video
+                  ref={videoRef}
+                  src={previewVideoUrl}
+                  className="w-full h-full object-cover opacity-70 group-hover:opacity-95 transition-all duration-700 ease-out scale-[1.02] group-hover:scale-100"
+                  loop
+                  muted
+                  playsInline
+                  autoPlay
+              />
             )}
 
-            {/* 2. VIDEO PREVIEW */}
-            <div className="absolute inset-0 w-full h-full pointer-events-none scale-[1.35] z-10 transition-opacity duration-500"> 
-                {videoId && (
-                    <iframe
-                        key={`preview-${videoId}`}
-                        src={getEmbedUrl(videoId, true)}
-                        className="w-full h-full object-cover"
-                        allow="autoplay; encrypted-media"
-                        tabIndex={-1}
-                        title="Preview"
-                    />
-                )}
-            </div>
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-80 group-hover:opacity-40 transition-opacity duration-500"></div>
 
-            {/* 3. INTERACTION LAYERS */}
-            <div className="absolute inset-0 z-20 bg-transparent"></div>
-            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none z-20"></div>
-
-            {/* Expand Button */}
-            <div className={`absolute inset-0 flex items-center justify-center z-30 pointer-events-none transition-all duration-300 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2 rounded-full flex items-center gap-2 shadow-2xl">
-                    <Maximize2 className="w-4 h-4" />
-                    <span className="font-bold tracking-widest text-xs uppercase">Expand</span>
+            {/* Play button */}
+            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-500 ease-out ${isHovered ? 'scale-110 bg-white shadow-xl shadow-white/20' : 'bg-white/10 backdrop-blur-sm border border-white/20'}`}>
+                    <Play className={`w-6 h-6 md:w-8 md:h-8 ml-1 transition-all duration-300 ${isHovered ? 'text-slate-900 fill-slate-900' : 'text-white fill-white'}`} />
                 </div>
             </div>
 
-            {/* Status */}
-            <div className="absolute bottom-6 left-6 z-30 flex items-center gap-2 text-white/80 pointer-events-none">
-                <VolumeX className="w-4 h-4 drop-shadow-md" />
-                <span className="text-[10px] font-bold tracking-widest uppercase drop-shadow-md">Preview</span>
-            </div>
-
-            {/* Header */}
-            <div className="absolute top-6 right-6 z-30 text-right mix-blend-difference pointer-events-none">
-                <span className="block text-white font-display font-bold text-3xl tracking-tight leading-none drop-shadow-md">{year}</span>
-                <span className="block text-white/70 font-english text-[10px] tracking-widest uppercase drop-shadow-md">{title}</span>
-            </div>
-
-            {/* Navigation Dots */}
-            {videoSources.length > 1 && (
-                <div className="absolute bottom-6 right-6 z-40 flex gap-2">
-                    {videoSources.map((_, idx) => (
-                        <button
-                            key={idx}
-                            onClick={(e) => { e.stopPropagation(); setActiveIndex(idx); }}
-                            className={`w-2 h-2 rounded-full transition-all duration-300 shadow-sm ${
-                                idx === activeIndex ? 'bg-white scale-150' : 'bg-white/40 hover:bg-white'
-                            }`}
-                        />
-                    ))}
+            {/* Sound indicator */}
+            <div className="absolute bottom-5 left-5 text-white flex items-center gap-2 z-20">
+                <div className={`flex items-center gap-2 transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-60'}`}>
+                    {isHovered ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                    <span className={`text-[10px] font-semibold tracking-[0.2em] uppercase transition-all duration-300 overflow-hidden ${isHovered ? 'max-w-24 opacity-100' : 'max-w-0 opacity-0'}`}>
+                        Sound On
+                    </span>
                 </div>
-            )}
+            </div>
+
+            {/* Year and title */}
+            <div className="absolute top-5 right-5 z-20 text-right pointer-events-none">
+                <span className="block text-white/90 font-display font-bold text-2xl md:text-3xl tracking-tight leading-none drop-shadow-lg">{year}</span>
+                <span className="block text-white/60 font-english text-[10px] tracking-[0.2em] uppercase mt-1">{title}</span>
+            </div>
         </div>
 
-        {/* MODAL */}
         {isOpen && createPortal(
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-[fadeIn_0.3s_ease-out]">
-                <div className="absolute inset-0" onClick={handleModalClose}></div>
-                
-                <button onClick={handleModalClose} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white z-[110] transition-colors border border-white/10">
-                    <X className="w-6 h-6" />
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-[fadeIn_0.4s_ease-out]">
+                <div className="absolute inset-0" onClick={toggleOpen}></div>
+                <button onClick={toggleOpen} className="absolute top-5 right-5 md:top-6 md:right-6 p-3 md:p-4 bg-white/5 hover:bg-white/15 rounded-full text-white transition-all duration-300 z-[110] group border border-white/10">
+                    <X className="w-6 h-6 md:w-7 md:h-7 group-hover:rotate-90 transition-transform duration-300" strokeWidth={1.5} />
                 </button>
 
-                <div className="relative w-[95vw] md:w-[85vw] h-[60vh] md:h-[85vh] max-w-[1600px] bg-black rounded-3xl border border-white/10 flex flex-col z-20 overflow-hidden shadow-2xl">
-                    <div className="flex-grow relative bg-black flex items-center justify-center">
-                        {videoId ? (
-                            <iframe 
-                                src={getEmbedUrl(videoId, false)}
-                                className="w-full h-full absolute inset-0" 
-                                allow="autoplay; fullscreen; picture-in-picture" 
-                                title={title} 
-                            />
-                        ) : (
-                            <div className="text-white flex flex-col items-center">
-                                <AlertCircle className="w-12 h-12 mb-4 text-red-500" />
-                                <span>Video Source Error</span>
-                            </div>
-                        )}
-                        
-                        {videoSources.length > 1 && (
-                            <>
-                                <button onClick={(e) => navigate('prev', e)} className="absolute -left-16 md:left-4 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all group">
-                                    <ChevronLeft className="w-10 h-10 group-hover:-translate-x-1 transition-transform" />
-                                </button>
-                                <button onClick={(e) => navigate('next', e)} className="absolute -right-16 md:right-4 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all group">
-                                    <ChevronRight className="w-10 h-10 group-hover:translate-x-1 transition-transform" />
-                                </button>
-                            </>
-                        )}
+                <div className="relative w-[95vw] md:w-[88vw] h-[55vh] md:h-[82vh] max-w-[1700px] bg-slate-950 rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden border border-white/5 flex flex-col z-20">
+                    <div className="flex-grow relative bg-black">
+                         <iframe
+                            src={embedUrlWithAutoplay}
+                            className="w-full h-full absolute inset-0"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            title={title}
+                        />
                     </div>
-                    
-                    <div className="h-16 bg-zinc-900 border-t border-zinc-800 flex items-center justify-between px-6 shrink-0">
-                         <div className="flex flex-col justify-center">
-                            <h3 className="text-white font-bold uppercase tracking-wider text-sm">{title}</h3>
-                            {videoSources.length > 1 && <span className="text-zinc-500 text-[10px] tracking-widest">{activeIndex + 1} / {videoSources.length}</span>}
-                         </div>
-                         {currentSource.fullUrl && (
-                             <a href={currentSource.fullUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-400 hover:text-white text-xs font-bold uppercase transition-colors">
-                                <Monitor className="w-4 h-4" /> <span className="hidden sm:inline">Watch on YouTube</span> <ExternalLink className="w-3 h-3" />
-                             </a>
-                         )}
+
+                    <div className="h-14 md:h-16 bg-slate-900/95 backdrop-blur border-t border-white/5 flex items-center justify-between px-4 md:px-6 shrink-0">
+                        <div className="flex items-center gap-3 md:gap-4">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-[pulseSoft_2s_ease-in-out_infinite]"></span>
+                            <div className="text-slate-400 text-[10px] md:text-xs uppercase tracking-[0.15em] font-english">{title} <span className="text-slate-600 mx-2">•</span> {year}</div>
+                        </div>
+                        <a href={fullVideoDirectUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors duration-300 text-xs font-semibold uppercase tracking-wider group">
+                            <Monitor className="w-4 h-4 group-hover:text-violet-400 transition-colors" />
+                            <span className="hidden md:inline">Full Quality</span>
+                            <ExternalLink className="w-3 h-3 opacity-60" />
+                        </a>
                     </div>
                 </div>
+                <style>{`
+                    @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+                    @keyframes pulseSoft { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+                `}</style>
             </div>,
             document.body
         )}
-        <style>{`
-            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        `}</style>
     </>
   );
 };

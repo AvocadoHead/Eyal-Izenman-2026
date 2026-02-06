@@ -6,7 +6,10 @@ interface NarrativeLineProps {
 
 export const NarrativeLine: React.FC<NarrativeLineProps> = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+  const mouseRef = useRef({ x: 0, y: 0, active: false });
+  // Smoothed blob position for fluid animation
+  const smoothBlobRef = useRef({ x: 0, y: 0, radius: 280, initialized: false });
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -19,13 +22,12 @@ export const NarrativeLine: React.FC<NarrativeLineProps> = () => {
     let animationId: number;
 
     // Line Configuration
-    const POINTS_COUNT = 40; 
+    const POINTS_COUNT = 50;
     const points: { x: number, y: number, baseX: number }[] = [];
 
     const initPoints = () => {
         points.length = 0;
-        // The line starts lower now, to allow the "Header Blob" to merge into it
-        const startY = window.innerHeight * 0.5; 
+        const startY = window.innerHeight * 0.5;
         const segmentHeight = (height - startY) / (POINTS_COUNT - 1);
         const center = width < 768 ? width * 0.15 : width * 0.5;
 
@@ -35,6 +37,11 @@ export const NarrativeLine: React.FC<NarrativeLineProps> = () => {
                 baseX: center,
                 y: startY + (i * segmentHeight)
             });
+        }
+
+        // Initialize smooth blob position
+        if (!smoothBlobRef.current.initialized) {
+            smoothBlobRef.current = { x: width * 0.5, y: window.innerHeight * 0.3, radius: 200, initialized: true };
         }
     };
 
@@ -47,32 +54,38 @@ export const NarrativeLine: React.FC<NarrativeLineProps> = () => {
       canvas.height = height * dpr;
       canvas.style.width = '100%';
       canvas.style.height = '100%';
-      
-      ctx.scale(dpr, dpr);
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       initPoints();
     };
 
+    // Smooth easing functions
+    const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
+    const easeInOutCubic = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    // Lerp with smoothing
+    const lerp = (start: number, end: number, factor: number) => start + (end - start) * factor;
+
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
-      time += 0.01;
+      time += 0.008; // Slightly slower for smoother feel
 
       const scrollTop = window.scrollY;
       const viewHeight = window.innerHeight;
-      
-      // --- 1. THE LINE (Sea-grass simulation) ---
-      
-      // Physics Update
+
+      // --- 1. THE LINE (Organic wave simulation) ---
+
+      // Physics Update with smoother waves
       points.forEach((p, i) => {
-          // Bottom points move more
-          const intensity = i / POINTS_COUNT; 
-          const wave1 = Math.sin(time + i * 0.15) * 8 * intensity;
-          const wave2 = Math.cos(time * 0.7 + i * 0.1) * 15 * intensity;
-          p.x = p.baseX + wave1 + wave2;
+          const intensity = Math.pow(i / POINTS_COUNT, 1.5); // Non-linear for organic feel
+          const wave1 = Math.sin(time * 0.8 + i * 0.12) * 10 * intensity;
+          const wave2 = Math.cos(time * 0.5 + i * 0.08) * 18 * intensity;
+          const wave3 = Math.sin(time * 0.3 + i * 0.05) * 6 * intensity; // Third subtle wave
+          p.x = p.baseX + wave1 + wave2 + wave3;
       });
 
-      // Draw Line
+      // Draw Line with bezier curves for smoothness
       ctx.beginPath();
-      // Start slightly off-screen top if needed, or at the first point
       ctx.moveTo(points[0].x, points[0].y);
 
       for (let i = 0; i < points.length - 1; i++) {
@@ -85,106 +98,185 @@ export const NarrativeLine: React.FC<NarrativeLineProps> = () => {
       }
       ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
 
-      // Line Style
+      // Enhanced gradient with more color stops
       const gradient = ctx.createLinearGradient(0, viewHeight * 0.5, 0, height);
-      gradient.addColorStop(0, 'rgba(167, 139, 250, 0)'); // Purple-ish transparent start
-      gradient.addColorStop(0.1, 'rgba(147, 197, 253, 0.4)'); // Blue
-      gradient.addColorStop(0.5, 'rgba(167, 139, 250, 0.4)'); // Purple
-      gradient.addColorStop(1, 'rgba(147, 197, 253, 0)'); // Blue fade out
-      
+      gradient.addColorStop(0, 'rgba(139, 92, 246, 0)'); // Violet transparent
+      gradient.addColorStop(0.08, 'rgba(139, 92, 246, 0.25)'); // Violet
+      gradient.addColorStop(0.25, 'rgba(99, 102, 241, 0.35)'); // Indigo
+      gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.3)'); // Violet
+      gradient.addColorStop(0.75, 'rgba(99, 102, 241, 0.25)'); // Indigo
+      gradient.addColorStop(1, 'rgba(139, 92, 246, 0)'); // Violet fade
+
       ctx.strokeStyle = gradient;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.stroke();
 
-      // --- 2. THE MORPHING BLOB (The "Cursor") ---
-      
-      // Logic:
-      // When scroll is 0, blob is HUGE and centered in the header area.
-      // As we scroll to viewHeight * 0.5, it shrinks and moves to points[0].
-      // After that, it follows the curve.
+      // --- 2. THE MORPHING BLOB with smooth interpolation ---
 
-      const headerZone = viewHeight * 0.4;
-      let blobX, blobY, blobRadius, blobAlpha;
+      const headerZone = viewHeight * 0.45;
+      const transitionZone = viewHeight * 0.15; // Blend zone for smooth transition
+      let targetX: number, targetY: number, targetRadius: number;
 
       if (scrollTop < headerZone) {
-          // PHASE 1: Header Animation
-          const t = scrollTop / headerZone; // 0 to 1
-          
-          // Position: Center Screen -> Line Start
-          const startX = width * 0.5; // Always center screen initially
-          const startY = viewHeight * 0.3; // Behind title
-          
-          const endX = points[0].x;
-          const endY = points[0].y;
+          // PHASE 1: Header - Large ambient blob
+          const t = Math.min(scrollTop / headerZone, 1);
+          const ease = easeOutQuart(t);
 
-          // Ease out cubic
-          const ease = 1 - Math.pow(1 - t, 3);
+          const startX = width * 0.5;
+          const startY = viewHeight * 0.32;
+          const endX = points[0]?.x ?? startX;
+          const endY = points[0]?.y ?? startY;
 
-          blobX = startX + (endX - startX) * ease;
-          blobY = startY + (endY - startY) * ease + scrollTop; // +scrollTop to keep it fixed relative to viewport during scroll
+          targetX = startX + (endX - startX) * ease;
+          targetY = startY + (endY - startY) * ease;
 
-          // Radius: Giant -> Tiny
-          // INCREASED SIZE FROM 150 to 280 for more amorphous impact
-          blobRadius = 280 - (272 * ease); // 280px -> 8px
-          
-          // Pulse effect (stronger when big)
-          // Add extra waviness to x/y when big
-          const pulse = Math.sin(time * 2) * (15 * (1-ease));
-          blobRadius += pulse;
-          
-          // Make it wobble when big
-          if(t < 0.5) {
-             blobX += Math.sin(time * 1.5) * 20 * (1-ease);
-             blobY += Math.cos(time * 1.2) * 20 * (1-ease);
+          // Smooth radius reduction with breathing effect
+          const baseRadius = 200 - (188 * ease); // 200px -> 12px
+          const breathe = Math.sin(time * 1.5) * (12 * (1 - ease));
+          targetRadius = Math.max(baseRadius + breathe, 8);
+
+          // Gentle organic movement when large
+          if (ease < 0.7) {
+             const wobbleStrength = (1 - ease) * 0.8;
+             targetX += Math.sin(time * 1.2) * 25 * wobbleStrength;
+             targetY += Math.cos(time * 0.9) * 20 * wobbleStrength;
           }
+
+      } else if (scrollTop < headerZone + transitionZone) {
+          // TRANSITION PHASE: Smooth blend between header and line following
+          const transitionT = (scrollTop - headerZone) / transitionZone;
+          const ease = easeInOutCubic(transitionT);
+
+          // Blend from end of header phase to start of line phase
+          const headerEndX = points[0]?.x ?? width * 0.5;
+          const headerEndY = points[0]?.y ?? viewHeight * 0.5;
+
+          targetX = headerEndX;
+          targetY = headerEndY;
+          targetRadius = lerp(12, 10, ease) + Math.sin(time * 4) * 1.5;
 
       } else {
           // PHASE 2: Line Following
-          const lineProgress = (scrollTop - headerZone) / (height - viewHeight - headerZone);
+          const lineStart = headerZone + transitionZone;
+          const lineProgress = (scrollTop - lineStart) / Math.max(height - viewHeight - lineStart, 1);
           const clampedProgress = Math.min(Math.max(lineProgress, 0), 1);
-          
+
           const activeIndex = clampedProgress * (points.length - 1);
           const idx = Math.floor(activeIndex);
           const nextIdx = Math.min(idx + 1, points.length - 1);
-          const t = activeIndex - idx;
+          const segmentT = activeIndex - idx;
+
+          // Smooth segment interpolation
+          const smoothT = easeInOutCubic(segmentT);
 
           const p1 = points[idx];
           const p2 = points[nextIdx];
-          
-          blobX = p1.x + (p2.x - p1.x) * t;
-          blobY = p1.y + (p2.y - p1.y) * t;
-          blobRadius = 8 + Math.sin(time * 5) * 1.5;
+
+          if (p1 && p2) {
+              targetX = lerp(p1.x, p2.x, smoothT);
+              targetY = lerp(p1.y, p2.y, smoothT);
+          } else {
+              targetX = width * 0.5;
+              targetY = viewHeight * 0.5;
+          }
+
+          const baseRadius = lerp(10, 6, clampedProgress);
+          targetRadius = baseRadius + Math.sin(time * 3) * 1.2;
       }
 
-      // Draw The Blob
-      const blobGrad = ctx.createRadialGradient(blobX, blobY, blobRadius * 0.2, blobX, blobY, blobRadius);
-      blobGrad.addColorStop(0, 'rgba(192, 132, 252, 0.9)'); // Bright Purple core
-      blobGrad.addColorStop(0.6, 'rgba(96, 165, 250, 0.5)'); // Blue mid
-      blobGrad.addColorStop(1, 'rgba(96, 165, 250, 0)'); // Transparent edge
+      // Apply smooth interpolation to blob position (prevents jumping)
+      const smoothFactor = 0.08; // Lower = smoother but slower response
+      const smooth = smoothBlobRef.current;
+      smooth.x = lerp(smooth.x, targetX, smoothFactor);
+      smooth.y = lerp(smooth.y, targetY, smoothFactor);
+      smooth.radius = lerp(smooth.radius, targetRadius, smoothFactor * 1.5);
+
+      let blobX = smooth.x;
+      let blobY = smooth.y;
+      let blobRadius = smooth.radius;
+
+      // Mouse interaction with smooth response
+      const mouse = mouseRef.current;
+      let hoverInfluence = 0;
+      if (mouse.active) {
+          const dx = mouse.x - blobX;
+          const dy = mouse.y - blobY;
+          const dist = Math.hypot(dx, dy);
+          const hoverRange = 180;
+          hoverInfluence = Math.max(0, 1 - dist / hoverRange);
+          if (hoverInfluence > 0) {
+              const pull = hoverInfluence * 0.08;
+              blobX += dx * pull;
+              blobY += dy * pull;
+              blobRadius += hoverInfluence * 8 + Math.sin(time * 5 + dist * 0.02) * 2 * hoverInfluence;
+          }
+      }
+
+      // Draw outer glow ring
+      if (blobRadius > 15) {
+          const outerGlow = ctx.createRadialGradient(blobX, blobY, blobRadius * 0.8, blobX, blobY, blobRadius * 1.4);
+          outerGlow.addColorStop(0, 'rgba(139, 92, 246, 0)');
+          outerGlow.addColorStop(0.5, 'rgba(139, 92, 246, 0.08)');
+          outerGlow.addColorStop(1, 'rgba(139, 92, 246, 0)');
+          ctx.beginPath();
+          ctx.arc(blobX, blobY, blobRadius * 1.4, 0, Math.PI * 2);
+          ctx.fillStyle = outerGlow;
+          ctx.fill();
+      }
+
+      // Draw The Blob with refined gradient
+      const blobGrad = ctx.createRadialGradient(blobX, blobY, 0, blobX, blobY, blobRadius);
+      blobGrad.addColorStop(0, 'rgba(167, 139, 250, 0.95)'); // Soft violet core
+      blobGrad.addColorStop(0.3, 'rgba(139, 92, 246, 0.8)'); // Violet
+      blobGrad.addColorStop(0.6, 'rgba(99, 102, 241, 0.5)'); // Indigo
+      blobGrad.addColorStop(0.85, 'rgba(99, 102, 241, 0.2)');
+      blobGrad.addColorStop(1, 'rgba(99, 102, 241, 0)'); // Transparent edge
 
       ctx.beginPath();
       ctx.arc(blobX, blobY, blobRadius, 0, Math.PI * 2);
       ctx.fillStyle = blobGrad;
       ctx.fill();
 
-      // Core of blob
+      // Hover glow effect
+      if (hoverInfluence > 0) {
+          ctx.beginPath();
+          ctx.arc(blobX, blobY, blobRadius + 16 * hoverInfluence, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(139, 92, 246, ${0.12 * hoverInfluence})`;
+          ctx.fill();
+      }
+
+      // Bright core highlight
+      const coreSize = Math.max(blobRadius * 0.25, 3);
       ctx.beginPath();
-      ctx.arc(blobX, blobY, blobRadius * 0.3, 0, Math.PI * 2);
-      ctx.fillStyle = '#fff';
-      ctx.globalAlpha = 0.6;
+      ctx.arc(blobX - blobRadius * 0.15, blobY - blobRadius * 0.15, coreSize, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
       ctx.fill();
-      ctx.globalAlpha = 1.0;
 
       animationId = requestAnimationFrame(draw);
     };
 
     window.addEventListener('resize', resize);
+    const handleMouseMove = (event: MouseEvent) => {
+        mouseRef.current = {
+            x: event.clientX,
+            y: event.clientY + window.scrollY,
+            active: true
+        };
+    };
+    const handleMouseLeave = () => {
+        mouseRef.current.active = false;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseleave', handleMouseLeave);
     resize();
     draw();
 
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationId);
     };
   }, []);

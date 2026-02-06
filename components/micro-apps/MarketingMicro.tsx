@@ -9,10 +9,10 @@ export const MarketingMicro: React.FC<MarketingMicroProps> = ({ lang, onToggleLa
   const isHe = lang === 'he';
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-[#fff7e8] group font-sans">
+    <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-[#fff7e8] to-[#fff4e0] group font-sans">
       {/* --- Ambient Background Blobs --- */}
-      <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-[#ffd6a6] rounded-full blur-[60px] opacity-60 animate-float" />
-      <div className="absolute bottom-[-10%] right-[-20%] w-[70%] h-[70%] bg-[#ff9f55] rounded-full blur-[80px] opacity-40 animate-float-delayed" />
+      <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-[#ffd6a6] rounded-full blur-[80px] opacity-50 animate-float" />
+      <div className="absolute bottom-[-10%] right-[-20%] w-[70%] h-[70%] bg-[#ff9f55] rounded-full blur-[100px] opacity-30 animate-float-delayed" />
 
       {/* --- Animated Connector Line --- */}
       <div className="absolute inset-0 pointer-events-none opacity-40">
@@ -67,9 +67,20 @@ export const MarketingMicro: React.FC<MarketingMicroProps> = ({ lang, onToggleLa
                 )}
             </h2>
             
-            <p className="font-sans text-sm text-[#6b4c32] max-w-[200px] leading-relaxed opacity-80 font-medium">
-                {isHe ? 'אסטרטגיה וקריאייטיב בעידן ה-AI.' : 'Strategy & creative in the AI age.'}
+            <p className="font-sans text-sm text-[#6b4c32] max-w-[220px] leading-relaxed opacity-80 font-medium">
+                {isHe ? 'סדנה למנהלי קריאייטיב ומותגים שרוצים להפוך בריף לקונספט שמזיז אנשים.' : 'For creative leads turning briefs into campaigns that move people.'}
             </p>
+            <div className="mt-6 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest font-bold">
+                <span className="px-2 py-1 rounded-full bg-white/70 border border-[#ff9f55]/40 text-[#5a3418] transition-transform duration-300 group-hover:-translate-y-1">
+                    {isHe ? 'מנהלי מותג' : 'Brand Leads'}
+                </span>
+                <span className="px-2 py-1 rounded-full bg-white/70 border border-[#ff9f55]/40 text-[#5a3418] transition-transform duration-300 group-hover:-translate-y-1">
+                    {isHe ? 'סטודיו/סוכנות' : 'Agency'}
+                </span>
+                <span className="px-2 py-1 rounded-full bg-white/70 border border-[#ff9f55]/40 text-[#5a3418] transition-transform duration-300 group-hover:-translate-y-1">
+                    {isHe ? 'יזמים' : 'Founders'}
+                </span>
+            </div>
         </div>
 
         {/* Footer mimic */}

@@ -32,21 +32,26 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, alignment, te
   const textAlignmentClass = textDir === 'rtl' ? 'text-right' : 'text-left';
 
   // Sizing for the container
-  const containerSize = project.type === 'video' ? 'w-full md:w-[500px] h-[300px]' 
-    : 'w-full md:w-[500px] h-[350px]';
+  const containerSize = project.type === 'video' ? 'w-full md:w-[520px] h-[280px] md:h-[320px]'
+    : 'w-full md:w-[520px] h-[320px] md:h-[360px]';
 
   return (
-    <div 
+    <div
       ref={cardRef}
-      className={`relative w-full md:w-1/2 flex flex-col ${structuralClasses} transition-opacity duration-1000 ${
-        isVisible ? 'opacity-100' : 'opacity-0'
+      className={`relative w-full md:w-1/2 flex flex-col ${structuralClasses} transition-all duration-1000 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
     >
-      {/* Connection Line to Center */}
-      <div className={`hidden md:block absolute top-1/2 w-24 h-px bg-slate-300 ${alignment === 'left' ? 'right-0' : 'left-0'}`} />
+      {/* Connection Line to Center - refined gradient */}
+      <div className={`hidden md:block absolute top-1/2 w-20 h-px ${alignment === 'left' ? 'right-0' : 'left-0'}`}>
+        <div className={`w-full h-full bg-gradient-to-${alignment === 'left' ? 'l' : 'r'} from-slate-300 to-transparent`}></div>
+      </div>
 
       {/* Frame for the Content */}
-      <div className={`relative ${containerSize} group bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 transition-all duration-500 hover:shadow-xl hover:border-slate-400`}>
+      <div className={`relative ${containerSize} group bg-white rounded-2xl md:rounded-3xl overflow-hidden shadow-md shadow-slate-200/50 border border-slate-200/80 transition-all duration-500 ease-out hover:shadow-xl hover:shadow-slate-300/40 hover:border-slate-300/80 hover:-translate-y-1`}>
+        {/* Subtle inner glow on hover */}
+        <div className="absolute inset-0 rounded-2xl md:rounded-3xl ring-1 ring-inset ring-black/[0.02] pointer-events-none z-10"></div>
+
         {/* If it's a link-based project, wrap in anchor, otherwise div (for Showreel modal) */}
         {project.type !== 'video' ? (
              <a href={project.link} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
@@ -60,17 +65,17 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, alignment, te
       </div>
 
       {/* Label (Floating outside) */}
-      <div 
-        className={`mt-4 ${alignment === 'left' ? 'mr-4' : 'ml-4'} ${textAlignmentClass} max-w-sm`} 
+      <div
+        className={`mt-5 ${alignment === 'left' ? 'mr-3' : 'ml-3'} ${textAlignmentClass} max-w-md`}
         dir={textDir}
       >
-          <h3 className="text-2xl font-display font-bold text-slate-900">{project.title}</h3>
-          <p className="text-slate-500 font-sans text-sm tracking-wide mt-1 leading-relaxed">{project.description}</p>
-          
+          <h3 className="text-xl md:text-2xl font-display font-bold text-slate-800 tracking-tight">{project.title}</h3>
+          <p className="text-slate-500 font-sans text-sm md:text-[15px] mt-2 leading-relaxed">{project.description}</p>
+
           {project.type !== 'video' && (
-            <a href={project.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-2 text-xs font-bold text-slate-400 hover:text-slate-800 transition-colors uppercase tracking-widest">
+            <a href={project.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 text-[11px] font-semibold text-slate-400 hover:text-violet-500 transition-colors duration-300 uppercase tracking-[0.15em] group">
                 <span>Visit Site</span>
-                <ExternalLink className="w-3 h-3" />
+                <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
           )}
       </div>
