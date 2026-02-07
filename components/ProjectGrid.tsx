@@ -19,6 +19,12 @@ const ProjectTile: React.FC<ProjectTileProps> = ({ project, index, textDir }) =>
   const tileRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
+  // Determine aspect ratio based on project type
+  // Videos use a taller aspect ratio to accommodate Shorts (9:16), other content uses 16:9
+  const isVideoProject = project.type === 'video';
+  // Use aspect-[3/4] as a compromise between full 9:16 and 16:9 for a balanced grid
+  const aspectClass = isVideoProject ? 'aspect-[3/4]' : 'aspect-video';
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -54,7 +60,7 @@ const ProjectTile: React.FC<ProjectTileProps> = ({ project, index, textDir }) =>
       onMouseMove={handleMouseMove}
     >
       <div
-        className={`relative rounded-2xl md:rounded-3xl overflow-hidden transition-all duration-700 ease-out h-[320px] md:h-[400px] ${
+        className={`relative rounded-2xl md:rounded-3xl overflow-hidden transition-all duration-700 ease-out ${aspectClass} ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}
         style={{

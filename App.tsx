@@ -98,7 +98,7 @@ const App: React.FC = () => {
   const currentProjects: Project[] = [
     {
       id: 'showreel', title: t.projects.showreel.title, description: t.projects.showreel.desc, link: '#', type: 'video',
-      component: <VideoProjectCard id="showreel" year="2025" title="Showreel" previewVideoUrl="https://www.youtube.com/embed/mkjYn2cRhrI?autoplay=1&mute=1&loop=1&playlist=mkjYn2cRhrI&controls=0&modestbranding=1&rel=0" fullVideoEmbedUrl="https://www.youtube.com/embed/mkjYn2cRhrI" fullVideoDirectUrl="https://youtube.com/shorts/mkjYn2cRhrI" />
+      component: <VideoProjectCard id="showreel" year="2025" title="Showreel" previewVideoUrl="" previewEmbedUrl="https://www.youtube.com/embed/mkjYn2cRhrI" fullVideoEmbedUrl="https://www.youtube.com/embed/mkjYn2cRhrI" fullVideoDirectUrl="https://youtube.com/shorts/mkjYn2cRhrI" />
     },
     {
       id: 'surrealness', title: t.projects.surreal.title, description: t.projects.surreal.desc, link: '#', type: 'video',

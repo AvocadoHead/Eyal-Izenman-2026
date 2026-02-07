@@ -17,18 +17,38 @@ interface MultiVideoProjectCardProps {
 export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ year, videos }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  
+
   const currentVideo = videos[currentVideoIndex];
-  
+
   const nextVideo = () => {
     setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
   };
-  
+
   const prevVideo = () => {
     setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
   };
-  
+
   const toggleOpen = () => setIsOpen(!isOpen);
+
+  // Build proper embed URL with query parameters
+  const buildEmbedUrl = (baseUrl: string, videoId: string, options: { muted?: boolean; controls?: boolean; loop?: boolean }) => {
+    const url = new URL(baseUrl);
+    url.searchParams.set('autoplay', '1');
+    url.searchParams.set('mute', options.muted ? '1' : '0');
+    url.searchParams.set('controls', options.controls ? '1' : '0');
+    url.searchParams.set('modestbranding', '1');
+    url.searchParams.set('rel', '0');
+    url.searchParams.set('playsinline', '1');
+    if (options.loop) {
+      url.searchParams.set('loop', '1');
+      url.searchParams.set('playlist', videoId);
+    }
+    // Add origin for proper embedding
+    if (typeof window !== 'undefined') {
+      url.searchParams.set('origin', window.location.origin);
+    }
+    return url.toString();
+  };
 
   return (
     <>
@@ -38,7 +58,7 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
       >
         {/* Autoplaying iframe background */}
         <iframe
-          src={`${currentVideo.embedUrl}&autoplay=1&mute=1&loop=1&playlist=${currentVideo.id}&controls=0&modestbranding=1&rel=0&enablejsapi=1`}
+          src={buildEmbedUrl(currentVideo.embedUrl, currentVideo.id, { muted: true, controls: false, loop: true })}
           className="absolute inset-0 w-full h-full border-0 scale-[1.02] group-hover:scale-100 transition-transform duration-1000 ease-out"
           allow="autoplay; encrypted-media"
           allowFullScreen
@@ -123,7 +143,7 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
           <div className="w-full h-full max-w-7xl max-h-full flex flex-col items-center justify-center">
             <div className="relative w-full aspect-video rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-slate-950 border border-white/5">
               <iframe
-                src={`${currentVideo.embedUrl}&autoplay=1&mute=0&controls=1&modestbranding=1&rel=0`}
+                src={buildEmbedUrl(currentVideo.embedUrl, currentVideo.id, { muted: false, controls: true, loop: false })}
                 className="absolute inset-0 w-full h-full border-0"
                 allow="autoplay; encrypted-media; fullscreen"
                 allowFullScreen

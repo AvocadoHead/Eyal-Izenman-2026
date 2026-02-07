@@ -47,6 +47,10 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
     embedUrl.searchParams.set('autoplay', '1');
     embedUrl.searchParams.set('mute', '1');
     embedUrl.searchParams.set('playsinline', '1');
+    // Add origin for proper embedding (prevents "Unavailable" errors)
+    if (typeof window !== 'undefined') {
+      embedUrl.searchParams.set('origin', window.location.origin);
+    }
     if (extraParams) {
       Object.entries(extraParams).forEach(([key, value]) => {
         embedUrl.searchParams.set(key, value);
@@ -55,9 +59,22 @@ export const VideoProjectCard: React.FC<VideoProjectCardProps> = ({
     return embedUrl.toString();
   };
 
-  const embedUrlWithAutoplay = buildEmbedUrl(fullVideoEmbedUrl);
+  // Extract video ID from embed URL for loop playlist
+  const getVideoId = (url: string) => {
+    const match = url.match(/embed\/([^?]+)/);
+    return match ? match[1] : '';
+  };
+
+  const embedUrlWithAutoplay = buildEmbedUrl(fullVideoEmbedUrl, { mute: '0' });
+  const videoId = previewEmbedUrl ? getVideoId(previewEmbedUrl) : '';
   const previewEmbedWithAutoplay = previewEmbedUrl
-    ? buildEmbedUrl(previewEmbedUrl, { controls: '0', modestbranding: '1', rel: '0' })
+    ? buildEmbedUrl(previewEmbedUrl, {
+        controls: '0',
+        modestbranding: '1',
+        rel: '0',
+        loop: '1',
+        playlist: videoId
+      })
     : null;
 
   return (
