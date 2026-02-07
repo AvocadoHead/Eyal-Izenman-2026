@@ -9,13 +9,13 @@ interface Blob {
   baseRadius: number;
   color: string;
   phase: number;
+  pulseSpeed: number;
 }
 
 export const FluidBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2, active: false });
   const blobsRef = useRef<Blob[]>([]);
-  const scrollRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,27 +29,29 @@ export const FluidBackground: React.FC = () => {
     let animationId: number;
 
     const colors = [
-      'rgba(139, 92, 246, 0.4)',   // Violet
-      'rgba(99, 102, 241, 0.35)',   // Indigo
-      'rgba(168, 85, 247, 0.3)',    // Purple
-      'rgba(59, 130, 246, 0.25)',   // Blue
-      'rgba(147, 51, 234, 0.3)',    // Purple darker
+      'rgba(139, 92, 246, 0.5)',   // Violet - more visible
+      'rgba(99, 102, 241, 0.45)',   // Indigo
+      'rgba(168, 85, 247, 0.4)',    // Purple
+      'rgba(79, 70, 229, 0.35)',    // Indigo darker
+      'rgba(124, 58, 237, 0.4)',    // Violet darker
+      'rgba(67, 56, 202, 0.35)',    // Indigo deep
     ];
 
     const initBlobs = () => {
       blobsRef.current = [];
-      const numBlobs = 5;
+      const numBlobs = 6;
 
       for (let i = 0; i < numBlobs; i++) {
         blobsRef.current.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          radius: 150 + Math.random() * 200,
-          baseRadius: 150 + Math.random() * 200,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: (Math.random() - 0.5) * 0.8,
+          radius: 180 + Math.random() * 250,
+          baseRadius: 180 + Math.random() * 250,
           color: colors[i % colors.length],
-          phase: Math.random() * Math.PI * 2
+          phase: Math.random() * Math.PI * 2,
+          pulseSpeed: 0.5 + Math.random() * 0.5
         });
       }
     };
@@ -72,91 +74,67 @@ export const FluidBackground: React.FC = () => {
     };
 
     const drawMetaball = (blob: Blob, mouseInfluence: { x: number; y: number; strength: number }) => {
-      const { x, y, radius, color, phase } = blob;
+      const { x, y, radius, color, phase, pulseSpeed } = blob;
 
-      // Organic shape using multiple overlapping circles
-      const numCircles = 6;
-      const points: { x: number; y: number; r: number }[] = [];
+      // Pulsing effect
+      const pulse = Math.sin(time * pulseSpeed) * 0.15 + 1;
+      const currentRadius = radius * pulse;
 
-      for (let i = 0; i < numCircles; i++) {
-        const angle = (i / numCircles) * Math.PI * 2 + phase + time * 0.3;
-        const wobble = Math.sin(time * 2 + i) * 20;
-        const distFromCenter = radius * 0.3 + wobble;
-
-        points.push({
-          x: x + Math.cos(angle) * distFromCenter,
-          y: y + Math.sin(angle) * distFromCenter,
-          r: radius * 0.6 + Math.sin(time + i * 0.5) * 20
-        });
-      }
-
-      // Draw main blob
-      ctx.beginPath();
-
-      // Use bezier curves to create smooth organic shape
-      const firstPoint = points[0];
-      ctx.moveTo(firstPoint.x + firstPoint.r, firstPoint.y);
-
-      for (let i = 0; i < points.length; i++) {
-        const p1 = points[i];
-        const p2 = points[(i + 1) % points.length];
-
-        const midX = (p1.x + p2.x) / 2;
-        const midY = (p1.y + p2.y) / 2;
-
-        ctx.quadraticCurveTo(
-          p1.x + Math.cos(time + i) * p1.r * 0.5,
-          p1.y + Math.sin(time + i) * p1.r * 0.5,
-          midX,
-          midY
-        );
-      }
-
-      ctx.closePath();
-
-      // Gradient fill
+      // Gradient fill - simple but effective
       const gradient = ctx.createRadialGradient(
-        x + mouseInfluence.x * 0.3,
-        y + mouseInfluence.y * 0.3,
+        x + mouseInfluence.x * 0.2,
+        y + mouseInfluence.y * 0.2,
         0,
         x,
         y,
-        radius * 1.5
+        currentRadius
       );
 
       const baseColor = color.replace(/[\d.]+\)$/, '');
-      gradient.addColorStop(0, baseColor + '0.6)');
-      gradient.addColorStop(0.5, baseColor + '0.3)');
+      gradient.addColorStop(0, baseColor + '0.7)');
+      gradient.addColorStop(0.4, baseColor + '0.4)');
+      gradient.addColorStop(0.7, baseColor + '0.15)');
       gradient.addColorStop(1, baseColor + '0)');
 
+      ctx.beginPath();
+      ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
       ctx.fill();
+
+      // Add a brighter core when mouse is near
+      if (mouseInfluence.strength > 0.3) {
+        const coreGradient = ctx.createRadialGradient(x, y, 0, x, y, currentRadius * 0.4);
+        coreGradient.addColorStop(0, `rgba(255, 255, 255, ${mouseInfluence.strength * 0.15})`);
+        coreGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.beginPath();
+        ctx.arc(x, y, currentRadius * 0.4, 0, Math.PI * 2);
+        ctx.fillStyle = coreGradient;
+        ctx.fill();
+      }
     };
 
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
-      time += 0.008;
+      time += 0.01;
 
       const scrollY = window.scrollY;
       const viewportHeight = window.innerHeight;
       const mouse = mouseRef.current;
 
       // Update and draw blobs
-      blobsRef.current.forEach((blob, i) => {
-        // Autonomous movement
+      blobsRef.current.forEach((blob) => {
+        // Gentle autonomous movement
         blob.x += blob.vx;
         blob.y += blob.vy;
 
-        // Bounce off edges with padding
-        const padding = blob.radius;
-        if (blob.x < padding || blob.x > width - padding) blob.vx *= -1;
-        if (blob.y < padding || blob.y > height - padding) blob.vy *= -1;
+        // Soft bounce off edges
+        const padding = blob.radius * 0.5;
+        if (blob.x < padding) { blob.x = padding; blob.vx = Math.abs(blob.vx) * 0.8; }
+        if (blob.x > width - padding) { blob.x = width - padding; blob.vx = -Math.abs(blob.vx) * 0.8; }
+        if (blob.y < padding) { blob.y = padding; blob.vy = Math.abs(blob.vy) * 0.8; }
+        if (blob.y > height - padding) { blob.y = height - padding; blob.vy = -Math.abs(blob.vy) * 0.8; }
 
-        // Keep in bounds
-        blob.x = Math.max(padding, Math.min(width - padding, blob.x));
-        blob.y = Math.max(padding, Math.min(height - padding, blob.y));
-
-        // Mouse attraction/repulsion
+        // Mouse attraction
         let mouseInfluence = { x: 0, y: 0, strength: 0 };
 
         if (mouse.active) {
@@ -164,85 +142,63 @@ export const FluidBackground: React.FC = () => {
           const dx = mouse.x - blob.x;
           const dy = mouseWorldY - blob.y;
           const dist = Math.hypot(dx, dy);
-          const maxDist = 400;
+          const maxDist = 500;
 
           if (dist < maxDist) {
-            const strength = 1 - dist / maxDist;
+            const strength = Math.pow(1 - dist / maxDist, 2); // Quadratic falloff for smoother feel
             mouseInfluence = { x: dx * strength, y: dy * strength, strength };
 
             // Attract blob toward mouse
-            blob.vx += (dx / dist) * strength * 0.15;
-            blob.vy += (dy / dist) * strength * 0.15;
+            blob.vx += (dx / dist) * strength * 0.25;
+            blob.vy += (dy / dist) * strength * 0.25;
 
             // Expand radius when mouse is near
-            blob.radius = blob.baseRadius + strength * 80;
+            blob.radius = blob.baseRadius + strength * 100;
           } else {
-            blob.radius += (blob.baseRadius - blob.radius) * 0.05;
+            blob.radius += (blob.baseRadius - blob.radius) * 0.03;
           }
         } else {
-          blob.radius += (blob.baseRadius - blob.radius) * 0.05;
+          blob.radius += (blob.baseRadius - blob.radius) * 0.03;
         }
 
         // Apply friction
-        blob.vx *= 0.98;
-        blob.vy *= 0.98;
+        blob.vx *= 0.97;
+        blob.vy *= 0.97;
 
-        // Add slight random movement
-        blob.vx += (Math.random() - 0.5) * 0.02;
-        blob.vy += (Math.random() - 0.5) * 0.02;
+        // Add organic drift
+        blob.vx += Math.sin(time + blob.phase) * 0.03;
+        blob.vy += Math.cos(time * 0.7 + blob.phase) * 0.03;
 
         // Limit velocity
-        const maxVel = 2;
+        const maxVel = 2.5;
         const vel = Math.hypot(blob.vx, blob.vy);
         if (vel > maxVel) {
           blob.vx = (blob.vx / vel) * maxVel;
           blob.vy = (blob.vy / vel) * maxVel;
         }
 
-        // Only draw if blob is near viewport
-        if (blob.y > scrollY - blob.radius * 2 && blob.y < scrollY + viewportHeight + blob.radius * 2) {
+        // Only draw if blob is near viewport (with generous margin)
+        if (blob.y > scrollY - blob.radius * 3 && blob.y < scrollY + viewportHeight + blob.radius * 3) {
           drawMetaball(blob, mouseInfluence);
         }
       });
 
-      // Draw connecting lines between close blobs
-      ctx.strokeStyle = 'rgba(139, 92, 246, 0.1)';
-      ctx.lineWidth = 1;
-
-      for (let i = 0; i < blobsRef.current.length; i++) {
-        for (let j = i + 1; j < blobsRef.current.length; j++) {
-          const b1 = blobsRef.current[i];
-          const b2 = blobsRef.current[j];
-          const dist = Math.hypot(b1.x - b2.x, b1.y - b2.y);
-          const maxDist = 400;
-
-          if (dist < maxDist) {
-            const alpha = (1 - dist / maxDist) * 0.15;
-            ctx.strokeStyle = `rgba(139, 92, 246, ${alpha})`;
-            ctx.beginPath();
-            ctx.moveTo(b1.x, b1.y);
-            ctx.lineTo(b2.x, b2.y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Draw mouse interaction ripple
+      // Draw mouse glow when active
       if (mouse.active) {
         const mouseWorldY = mouse.y + scrollY;
-        const rippleRadius = 100 + Math.sin(time * 4) * 20;
+        const glowRadius = 150 + Math.sin(time * 3) * 30;
 
-        const rippleGradient = ctx.createRadialGradient(
+        const glowGradient = ctx.createRadialGradient(
           mouse.x, mouseWorldY, 0,
-          mouse.x, mouseWorldY, rippleRadius
+          mouse.x, mouseWorldY, glowRadius
         );
-        rippleGradient.addColorStop(0, 'rgba(167, 139, 250, 0.15)');
-        rippleGradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.08)');
-        rippleGradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+        glowGradient.addColorStop(0, 'rgba(167, 139, 250, 0.12)');
+        glowGradient.addColorStop(0.4, 'rgba(139, 92, 246, 0.06)');
+        glowGradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
 
         ctx.beginPath();
-        ctx.arc(mouse.x, mouseWorldY, rippleRadius, 0, Math.PI * 2);
-        ctx.fillStyle = rippleGradient;
+        ctx.arc(mouse.x, mouseWorldY, glowRadius, 0, Math.PI * 2);
+        ctx.fillStyle = glowGradient;
         ctx.fill();
       }
 
@@ -258,7 +214,7 @@ export const FluidBackground: React.FC = () => {
     };
 
     const handleScroll = () => {
-      scrollRef.current = window.scrollY;
+      // Scroll position is read directly in draw() via window.scrollY
     };
 
     // Observe body height changes
@@ -286,12 +242,13 @@ export const FluidBackground: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed top-0 left-0 w-full pointer-events-none"
+      className="pointer-events-none"
       style={{
-        zIndex: 0,
         position: 'absolute',
         top: 0,
         left: 0,
+        width: '100%',
+        zIndex: 0,
         filter: 'blur(40px)',
       }}
     />
