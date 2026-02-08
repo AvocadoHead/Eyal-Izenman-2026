@@ -103,10 +103,10 @@ const App: React.FC = () => {
     {
       id: 'surrealness', title: t.projects.surreal.title, description: t.projects.surreal.desc, link: '#', type: 'video',
       component: <MultiVideoProjectCard year="2025" videos={[
-        { id: 'Re2V2zprjNo', title: 'Surreal Dreams 1', embedUrl: 'https://www.youtube.com/embed/Re2V2zprjNo', directUrl: 'https://youtube.com/shorts/Re2V2zprjNo' },
-        { id: 'fLYQgmPzBP0', title: 'Surreal Dreams 2', embedUrl: 'https://www.youtube.com/embed/fLYQgmPzBP0', directUrl: 'https://youtube.com/shorts/fLYQgmPzBP0' },
-        { id: '4vwRzAcKvz4', title: 'Surreal Dreams 3', embedUrl: 'https://www.youtube.com/embed/4vwRzAcKvz4', directUrl: 'https://youtube.com/shorts/4vwRzAcKvz4' },
-        { id: 'rPRcQ4bYEYk', title: 'Surreal Dreams 4', embedUrl: 'https://www.youtube.com/embed/rPRcQ4bYEYk', directUrl: 'https://youtube.com/shorts/rPRcQ4bYEYk' }
+        { id: 'Re2V2zprjNo', title: 'Surreal Dreams 1', embedUrl: 'https://www.youtube.com/embed/Re2V2zprjNo', directUrl: 'https://www.youtube.com/watch?v=Re2V2zprjNo' },
+        { id: 'a0RhwpbhnCA', title: 'Surreal Dreams 2', embedUrl: 'https://www.youtube.com/embed/a0RhwpbhnCA', directUrl: 'https://www.youtube.com/watch?v=a0RhwpbhnCA' },
+        { id: '3K25zquwnUE', title: 'Surreal Dreams 3', embedUrl: 'https://www.youtube.com/embed/3K25zquwnUE', directUrl: 'https://www.youtube.com/watch?v=3K25zquwnUE' },
+        { id: 'h9MQ6L4H72o', title: 'Surreal Dreams 4', embedUrl: 'https://www.youtube.com/embed/h9MQ6L4H72o', directUrl: 'https://www.youtube.com/watch?v=h9MQ6L4H72o' }
       ]} />
     },
     { id: 'ai-index', title: t.projects.aiIndex.title, description: t.projects.aiIndex.desc, link: 'https://avocadohead.github.io/AI-Index/', type: 'interactive', component: <SitePreview url="https://avocadohead.github.io/AI-Index/" /> },
