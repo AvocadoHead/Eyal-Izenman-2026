@@ -38,7 +38,7 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
       >
         {/* Autoplaying iframe background */}
         <iframe
-          src={`${currentVideo.embedUrl}&autoplay=1&mute=1&loop=1&playlist=${currentVideo.id}&controls=0&modestbranding=1&rel=0&enablejsapi=1`}
+          src={`${currentVideo.embedUrl}?autoplay=1&mute=1&loop=1&playlist=${currentVideo.id}&controls=0&modestbranding=1&rel=0&enablejsapi=1`}
           className="absolute inset-0 w-full h-full border-0 scale-[1.02] group-hover:scale-100 transition-transform duration-1000 ease-out"
           allow="autoplay; encrypted-media"
           allowFullScreen
@@ -123,7 +123,7 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
           <div className="w-full h-full max-w-7xl max-h-full flex flex-col items-center justify-center">
             <div className="relative w-full aspect-video rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-slate-950 border border-white/5">
               <iframe
-                src={`${currentVideo.embedUrl}&autoplay=1&mute=0&controls=1&modestbranding=1&rel=0`}
+                src={`${currentVideo.embedUrl}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0`}
                 className="absolute inset-0 w-full h-full border-0"
                 allow="autoplay; encrypted-media; fullscreen"
                 allowFullScreen
