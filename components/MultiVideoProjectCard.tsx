@@ -30,19 +30,21 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
 
   const toggleOpen = () => setIsOpen(!isOpen);
 
-  // Build embed URL - minimal params to avoid YouTube restrictions
-  const buildEmbedUrl = (baseUrl: string, videoId: string, options: { muted?: boolean; controls?: boolean; loop?: boolean }) => {
+  // Build embed URL using youtube-nocookie for better embedding support
+  const buildEmbedUrl = (videoId: string, options: { muted?: boolean; controls?: boolean; loop?: boolean }) => {
     const params = new URLSearchParams();
     params.set('autoplay', '1');
     params.set('mute', options.muted ? '1' : '0');
     if (!options.controls) params.set('controls', '0');
     params.set('rel', '0');
     params.set('playsinline', '1');
+    params.set('enablejsapi', '1');
+    params.set('modestbranding', '1');
     if (options.loop) {
       params.set('loop', '1');
       params.set('playlist', videoId);
     }
-    return `${baseUrl}?${params.toString()}`;
+    return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
   };
 
   return (
@@ -54,7 +56,7 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
         {/* Autoplaying iframe background - key forces re-render on video change */}
         <iframe
           key={`card-${currentVideo.id}-${currentVideoIndex}`}
-          src={buildEmbedUrl(currentVideo.embedUrl, currentVideo.id, { muted: true, controls: false, loop: true })}
+          src={buildEmbedUrl(currentVideo.id, { muted: true, controls: false, loop: true })}
           className="absolute inset-0 w-full h-full border-0 scale-[1.02] group-hover:scale-100 transition-transform duration-1000 ease-out"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -140,7 +142,7 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
             <div className="relative w-full aspect-video rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-slate-950 border border-white/5">
               <iframe
                 key={`modal-${currentVideo.id}-${currentVideoIndex}`}
-                src={buildEmbedUrl(currentVideo.embedUrl, currentVideo.id, { muted: false, controls: true, loop: false })}
+                src={buildEmbedUrl(currentVideo.id, { muted: false, controls: true, loop: false })}
                 className="absolute inset-0 w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                 allowFullScreen
