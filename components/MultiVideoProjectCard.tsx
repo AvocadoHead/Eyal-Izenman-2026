@@ -30,35 +30,17 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
 
   const toggleOpen = () => setIsOpen(!isOpen);
 
-  // Build embed URL using youtube-nocookie for better embedding support
-  const buildEmbedUrl = (videoId: string, options: { muted?: boolean; controls?: boolean; loop?: boolean }) => {
-    const params = new URLSearchParams();
-    params.set('autoplay', '1');
-    params.set('mute', options.muted ? '1' : '0');
-    if (!options.controls) params.set('controls', '0');
-    params.set('rel', '0');
-    params.set('playsinline', '1');
-    params.set('enablejsapi', '1');
-    params.set('modestbranding', '1');
-    if (options.loop) {
-      params.set('loop', '1');
-      params.set('playlist', videoId);
-    }
-    return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
-  };
-
   return (
     <>
       <div
         onClick={toggleOpen}
         className="group relative w-full h-full overflow-hidden cursor-pointer bg-slate-900"
       >
-        {/* Autoplaying iframe background - key forces re-render on video change */}
+        {/* Autoplaying iframe background */}
         <iframe
-          key={`card-${currentVideo.id}-${currentVideoIndex}`}
-          src={buildEmbedUrl(currentVideo.id, { muted: true, controls: false, loop: true })}
+          src={`${currentVideo.embedUrl}&autoplay=1&mute=1&loop=1&playlist=${currentVideo.id}&controls=0&modestbranding=1&rel=0&enablejsapi=1`}
           className="absolute inset-0 w-full h-full border-0 scale-[1.02] group-hover:scale-100 transition-transform duration-1000 ease-out"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allow="autoplay; encrypted-media"
           allowFullScreen
           style={{ pointerEvents: 'none' }}
         />
@@ -141,10 +123,9 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
           <div className="w-full h-full max-w-7xl max-h-full flex flex-col items-center justify-center">
             <div className="relative w-full aspect-video rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-slate-950 border border-white/5">
               <iframe
-                key={`modal-${currentVideo.id}-${currentVideoIndex}`}
-                src={buildEmbedUrl(currentVideo.id, { muted: false, controls: true, loop: false })}
+                src={`${currentVideo.embedUrl}&autoplay=1&mute=0&controls=1&modestbranding=1&rel=0`}
                 className="absolute inset-0 w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                allow="autoplay; encrypted-media; fullscreen"
                 allowFullScreen
               />
             </div>
