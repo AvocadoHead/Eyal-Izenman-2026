@@ -56,8 +56,9 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
         onClick={toggleOpen}
         className="group relative w-full h-full overflow-hidden cursor-pointer bg-slate-900"
       >
-        {/* Autoplaying iframe background */}
+        {/* Autoplaying iframe background - key forces re-render on video change */}
         <iframe
+          key={currentVideo.id}
           src={buildEmbedUrl(currentVideo.embedUrl, currentVideo.id, { muted: true, controls: false, loop: true })}
           className="absolute inset-0 w-full h-full border-0 scale-[1.02] group-hover:scale-100 transition-transform duration-1000 ease-out"
           allow="autoplay; encrypted-media"
@@ -143,6 +144,7 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
           <div className="w-full h-full max-w-7xl max-h-full flex flex-col items-center justify-center">
             <div className="relative w-full aspect-video rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-slate-950 border border-white/5">
               <iframe
+                key={`modal-${currentVideo.id}`}
                 src={buildEmbedUrl(currentVideo.embedUrl, currentVideo.id, { muted: false, controls: true, loop: false })}
                 className="absolute inset-0 w-full h-full border-0"
                 allow="autoplay; encrypted-media; fullscreen"

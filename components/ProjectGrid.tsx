@@ -20,10 +20,10 @@ const ProjectTile: React.FC<ProjectTileProps> = ({ project, index, textDir }) =>
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // Determine aspect ratio based on project type
-  // Videos use a taller aspect ratio to accommodate Shorts (9:16), other content uses 16:9
+  // Videos use a taller 3:4 ratio for Shorts, microsites use 4:3 for more visibility
   const isVideoProject = project.type === 'video';
-  // Use aspect-[3/4] as a compromise between full 9:16 and 16:9 for a balanced grid
-  const aspectClass = isVideoProject ? 'aspect-[3/4]' : 'aspect-video';
+  // Use aspect-[4/3] for microsites to give them more vertical space and visibility
+  const aspectClass = isVideoProject ? 'aspect-[3/4]' : 'aspect-[4/3]';
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -123,8 +123,8 @@ const ProjectTile: React.FC<ProjectTileProps> = ({ project, index, textDir }) =>
       </div>
 
       {/* Description below the tile */}
-      <div className={`mt-4 px-1 transition-all duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`} dir={textDir}>
-        <p className="text-white/40 text-sm leading-relaxed line-clamp-2">
+      <div className={`mt-5 px-1 transition-all duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`} dir={textDir}>
+        <p className="text-white/50 text-sm leading-relaxed line-clamp-2">
           {project.description}
         </p>
       </div>
@@ -134,9 +134,9 @@ const ProjectTile: React.FC<ProjectTileProps> = ({ project, index, textDir }) =>
 
 export const ProjectGrid: React.FC<ProjectGridProps> = ({ projects, textDir }) => {
   return (
-    <section className="w-full px-4 md:px-8 lg:px-12 py-8">
+    <section className="w-full px-6 md:px-12 lg:px-16 py-12">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12 lg:gap-14">
           {projects.map((project, index) => (
             <ProjectTile
               key={project.id}
