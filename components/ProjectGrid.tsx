@@ -20,10 +20,9 @@ const ProjectTile: React.FC<ProjectTileProps> = ({ project, index, textDir }) =>
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // Determine aspect ratio based on project type
-  // Videos use a taller 3:4 ratio for Shorts, microsites use 4:3 for more visibility
+  // Videos use 3:4 for Shorts, microsites use square for maximum visibility
   const isVideoProject = project.type === 'video';
-  // Use aspect-[4/3] for microsites to give them more vertical space and visibility
-  const aspectClass = isVideoProject ? 'aspect-[3/4]' : 'aspect-[4/3]';
+  const aspectClass = isVideoProject ? 'aspect-[3/4]' : 'aspect-square';
 
   useEffect(() => {
     const observer = new IntersectionObserver(

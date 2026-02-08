@@ -30,24 +30,19 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
 
   const toggleOpen = () => setIsOpen(!isOpen);
 
-  // Build proper embed URL with query parameters
+  // Build embed URL - minimal params to avoid YouTube restrictions
   const buildEmbedUrl = (baseUrl: string, videoId: string, options: { muted?: boolean; controls?: boolean; loop?: boolean }) => {
-    const url = new URL(baseUrl);
-    url.searchParams.set('autoplay', '1');
-    url.searchParams.set('mute', options.muted ? '1' : '0');
-    url.searchParams.set('controls', options.controls ? '1' : '0');
-    url.searchParams.set('modestbranding', '1');
-    url.searchParams.set('rel', '0');
-    url.searchParams.set('playsinline', '1');
+    const params = new URLSearchParams();
+    params.set('autoplay', '1');
+    params.set('mute', options.muted ? '1' : '0');
+    if (!options.controls) params.set('controls', '0');
+    params.set('rel', '0');
+    params.set('playsinline', '1');
     if (options.loop) {
-      url.searchParams.set('loop', '1');
-      url.searchParams.set('playlist', videoId);
+      params.set('loop', '1');
+      params.set('playlist', videoId);
     }
-    // Add origin for proper embedding
-    if (typeof window !== 'undefined') {
-      url.searchParams.set('origin', window.location.origin);
-    }
-    return url.toString();
+    return `${baseUrl}?${params.toString()}`;
   };
 
   return (
@@ -58,10 +53,10 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
       >
         {/* Autoplaying iframe background - key forces re-render on video change */}
         <iframe
-          key={currentVideo.id}
+          key={`card-${currentVideo.id}-${currentVideoIndex}`}
           src={buildEmbedUrl(currentVideo.embedUrl, currentVideo.id, { muted: true, controls: false, loop: true })}
           className="absolute inset-0 w-full h-full border-0 scale-[1.02] group-hover:scale-100 transition-transform duration-1000 ease-out"
-          allow="autoplay; encrypted-media"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           style={{ pointerEvents: 'none' }}
         />
@@ -144,10 +139,10 @@ export const MultiVideoProjectCard: React.FC<MultiVideoProjectCardProps> = ({ ye
           <div className="w-full h-full max-w-7xl max-h-full flex flex-col items-center justify-center">
             <div className="relative w-full aspect-video rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-slate-950 border border-white/5">
               <iframe
-                key={`modal-${currentVideo.id}`}
+                key={`modal-${currentVideo.id}-${currentVideoIndex}`}
                 src={buildEmbedUrl(currentVideo.embedUrl, currentVideo.id, { muted: false, controls: true, loop: false })}
                 className="absolute inset-0 w-full h-full border-0"
-                allow="autoplay; encrypted-media; fullscreen"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                 allowFullScreen
               />
             </div>
